@@ -43,6 +43,20 @@ namespace OuterRim
         public NetworkVariable<int> CurrentNodeId = new NetworkVariable<int>(
             -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+        // Ship combat stats
+        public NetworkVariable<int> AttackDice = new NetworkVariable<int>(
+            2, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+        // Skill values
+        public NetworkVariable<int> CombatSkill = new NetworkVariable<int>(
+            2, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        public NetworkVariable<int> PilotingSkill = new NetworkVariable<int>(
+            1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        public NetworkVariable<int> CunningSkill = new NetworkVariable<int>(
+            1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        public NetworkVariable<int> TechSkill = new NetworkVariable<int>(
+            1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
         // Inventory: cargo, crew, gear, mods — synced for all to see
         public NetworkList<CardInstanceData> Inventory;
 
@@ -81,6 +95,54 @@ namespace OuterRim
                 case FactionType.Rebels: RebelsRep.Value += delta; break;
                 case FactionType.Hutts: HuttsRep.Value += delta; break;
             }
+        }
+
+        // ─── Resource methods (server-only) ────────────────────────────────
+
+        public bool SpendCredits(int amount)
+        {
+            if (!IsServer) return false;
+            if (Credits.Value < amount || amount < 0) return false;
+            Credits.Value -= amount;
+            return true;
+        }
+
+        public void AddCredits(int amount)
+        {
+            if (!IsServer || amount <= 0) return;
+            Credits.Value += amount;
+        }
+
+        public void AddFame(int amount)
+        {
+            if (!IsServer || amount <= 0) return;
+            Fame.Value += amount;
+        }
+
+        public void TakeHullDamage(int amount)
+        {
+            if (!IsServer || amount <= 0) return;
+            ShipHealth.Value = Mathf.Max(0, ShipHealth.Value - amount);
+            if (ShipHealth.Value <= 0 && Health.Value > 0)
+            {
+                // Ship destroyed: damage scoundrel and respawn
+                Health.Value = Mathf.Max(0, Health.Value - 1);
+                ShipHealth.Value = MaxShipHealth.Value;
+                Debug.Log($"[PlayerState] Player {OwnerClientId} ship destroyed! Scoundrel health: {Health.Value}");
+            }
+        }
+
+        /// <summary>Get player's dice count for a given skill type.</summary>
+        public int GetSkillValue(SkillType skill)
+        {
+            return skill switch
+            {
+                SkillType.Combat   => CombatSkill.Value,
+                SkillType.Piloting => PilotingSkill.Value,
+                SkillType.Cunning  => CunningSkill.Value,
+                SkillType.Tech     => TechSkill.Value,
+                _ => 1
+            };
         }
 
         public ReputationStatus GetReputationStatus(FactionType faction)

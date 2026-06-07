@@ -194,6 +194,40 @@ namespace OuterRim
         // ACTION PHASE
         // ═════════════════════════════════════════════════════════════════════
 
+        /// <summary>Server validates and executes a ship movement during Action Phase.</summary>
+        [ServerRpc(RequireOwnership = false)]
+        public void ConfirmShipMovementServerRpc(int destinationNodeId, ServerRpcParams rpcParams = default)
+        {
+            if (!ValidateActivePlayer(rpcParams.Receive.SenderClientId)) return;
+            if (currentPhase.Value != GamePhase.ActionPhase) return;
+
+            var player = GetActivePlayer();
+            if (ShipMovement.Instance != null)
+                ShipMovement.Instance.TryMovePlayer(player, destinationNodeId);
+        }
+
+        /// <summary>Buy a card from the market row during Action Phase.</summary>
+        [ServerRpc(RequireOwnership = false)]
+        public void BuyCardServerRpc(MarketDeckType deckType, int rowIndex, ServerRpcParams rpcParams = default)
+        {
+            if (!ValidateActivePlayer(rpcParams.Receive.SenderClientId)) return;
+            if (currentPhase.Value != GamePhase.ActionPhase) return;
+
+            var player = GetActivePlayer();
+            DeckManager.Instance?.TryPurchaseCard(player, deckType, rowIndex);
+        }
+
+        /// <summary>Cycle a market row card during Action Phase (costs credits).</summary>
+        [ServerRpc(RequireOwnership = false)]
+        public void CycleCardServerRpc(MarketDeckType deckType, int rowIndex, ServerRpcParams rpcParams = default)
+        {
+            if (!ValidateActivePlayer(rpcParams.Receive.SenderClientId)) return;
+            if (currentPhase.Value != GamePhase.ActionPhase) return;
+
+            var player = GetActivePlayer();
+            DeckManager.Instance?.TryCycleCard(player, deckType, rowIndex);
+        }
+
         [ServerRpc(RequireOwnership = false)]
         public void EndActionPhaseServerRpc(ServerRpcParams rpcParams = default)
         {
@@ -201,6 +235,19 @@ namespace OuterRim
             if (currentPhase.Value != GamePhase.ActionPhase) return;
 
             TransitionToPhase(GamePhase.EncounterPhase);
+        }
+
+        // ═════════════════════════════════════════════════════════════════════
+        // ENCOUNTER PHASE
+        // ═════════════════════════════════════════════════════════════════════
+
+        /// <summary>Called by CombatResolver when an encounter fully resolves.</summary>
+        public void NotifyEncounterComplete()
+        {
+            if (!IsServer) return;
+            if (currentPhase.Value != GamePhase.EncounterPhase) return;
+
+            TransitionToPhase(GamePhase.CheckingWinCondition);
         }
 
         // ═════════════════════════════════════════════════════════════════════
