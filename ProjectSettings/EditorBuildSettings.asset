@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/SceneMenu-donotship/SceneMenu.unity
+    guid: 0e5fc22cad5fc48e7b934fa703f2e492
+  - enabled: 1
+    path: Assets/Thermal/Thermal.unity
+    guid: 35135eb75a2da084aa0948aed82caf17
+  - enabled: 1
+    path: Assets/Bottleneck/Bottleneck.unity
+    guid: 07f758e93848b8443b5e72607132ec12
+  - enabled: 1
+    path: Assets/Automatic Performance Control/AutomaticPerformanceControl.unity
+    guid: 2d6e4054d8e94de4087034f0c4f4ce1c
+  - enabled: 1
+    path: Assets/VariableRefreshRate/VariableRefreshRate.unity
+    guid: ebcf08ec52b982e488eb423d2a493069
+  - enabled: 1
+    path: Assets/Adaptive Batching/AdaptiveBatching.unity
+    guid: b357da1622f6149a48c8324ee377494c
+  - enabled: 1
+    path: Assets/Adaptive Framerate/AdaptiveFramerate.unity
+    guid: dbc6f6598bcbaab469521b29ce58e6d1
+  - enabled: 1
+    path: Assets/Adaptive LOD/AdaptiveLOD.unity
+    guid: bcf139c7ae73f7445b416c5291efe569
+  - enabled: 1
+    path: Assets/Adaptive LUT/AdaptiveLUT.unity
+    guid: 197fef25b57a21f4196f11414c69cd58
+  - enabled: 1
+    path: Assets/Adaptive MSAA/AdaptiveMSAA.unity
+    guid: 2132b9474f70e44f7a1716e2de50daf6
+  - enabled: 1
+    path: Assets/Adaptive Resolution/AdaptiveResolution.unity
+    guid: e3adf9d84e2a11746958c4929d003dc3
+  - enabled: 1
+    path: Assets/Adaptive Shadow/AdaptiveShadow.unity
+    guid: d812819b5efd2eb43b089e6dbc2eeac5
+  - enabled: 1
+    path: Assets/Adaptive Sorting/AdaptiveSorting.unity
+    guid: 419bcf599f850a846bc60d01512aa060
+  - enabled: 1
+    path: Assets/SettingsCheck-donotship/SettingsCheck.unity
+    guid: b08d9a9a9d09d2e4aa60ea701a5374e5
+  - enabled: 1
+    path: Assets/Adaptive Transparency/AdaptiveTransparency.unity
+    guid: e2e48151d1abc944295e7dbb36c0970e
+  - enabled: 1
+    path: Assets/Boost/Boost.unity
+    guid: 7aac0acd347f9874fa241bbabc376f63
+  - enabled: 1
+    path: Assets/ClusterInfo/ClusterInfo.unity
+    guid: b3fb6b36102090a4b815e6a4a051c6b1
+  - enabled: 1
+    path: Assets/Adaptive Decals/AdaptiveDecals.unity
+    guid: 34609d54ecc3a498485f57fef5d8a99e
+  - enabled: 1
+    path: Assets/Adaptive Layer Culling/AdaptiveLayerCulling.unity
+    guid: d0945b1059d864c7eb8ac450f4094f3e
+  - enabled: 1
+    path: Assets/Visual Scripting/VisualScripting.unity
+    guid: abf7129cf875d4b9f96ae7d9b43ca82b
+  - enabled: 1
+    path: Assets/Adaptive View Distance/AdaptiveViewDistance.unity
+    guid: efcddf5dee8a08d419def0c8025d758f
+  - enabled: 1
+    path: Assets/Custom Scaler/CustomScaler.unity
+    guid: a884e5b9dc9cb47628be713e07a61df4
+  - enabled: 1
+    path: Assets/Adaptive Physics/AdaptivePhysics.unity
+    guid: 9a7794bf0df03844086d8d7a7696c32c
+  - enabled: 1
+    path: Assets/Scaler Profiles/ScalerProfiles.unity
+    guid: 73c73f05a8ed242f7a60490d1989e14c
+  - enabled: 1
+    path: Assets/SubsystemCheck-donotship/SubsystemCheck.unity
+    guid: 3af677e8814b5854fa853936b3871211
+  m_configObjects:
+    com.unity.adaptivePerformance.basic.provider_settings: {fileID: 11400000, guid: f6ca4bcce0b64e64fac510935b854cd1,
+      type: 2}
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: d2e4b4f2bcecf1741b9a8996567ab344,
+      type: 2}
+    com.unity.adaptiveperformance.samsung.android.provider_settings: {fileID: 11400000,
+      guid: b41b746d502fc9e43aa6894faf47a34b, type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000,
+      guid: 585504b6799959745b0202ea84ce88c6, type: 2}
+  m_UseUCBPForAssetBundles: 0
