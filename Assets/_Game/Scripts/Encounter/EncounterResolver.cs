@@ -1,5 +1,5 @@
-// EncounterResolver.cs — Auto-resolves encounters during Encounter Phase.
-// Runs server-side coroutine with patrol detection, planet encounters, dice combat.
+// EncounterResolver.cs — Auto-resolves encounters per Outer Rim rules
+// Patrol detection, stealth tests, planet encounters, contact tokens
 using System.Collections;
 using UnityEngine;
 using Unity.Netcode;
@@ -19,7 +19,6 @@ namespace OuterRim
             else { Destroy(gameObject); return; }
         }
 
-        /// <summary>Entry point — called from GameManager during EncounterPhase.</summary>
         public void ResolveEncounter(PlayerState player)
         {
             if (!IsServer) return;
@@ -30,29 +29,27 @@ namespace OuterRim
         {
             yield return new WaitForSeconds(encounterDelay);
 
+            var node = GetPlayerNode(player);
+            if (node == null)
+            {
+                NotifyEncounterResultClientRpc(player.OwnerClientId, "No encounter.");
+                yield return new WaitForSeconds(combatDelay);
+                GameManager.Instance?.NotifyEncounterComplete();
+                yield break;
+            }
+
             string result;
 
-            // Check for patrol at current node
-            var node = GetPlayerNode(player);
-            if (node != null && node.Type == MapNodeType.NavPoint)
+            // ─── Outer Rim Rule: Patrol Detection ─────────────────────
+            // When on a NavPoint or moving into a patrol space, check detection.
+            // Base detection chance depends on reputation with the patrol's faction.
+            // Negative rep: higher detection. Positive rep: lower detection.
+            if (node.Type == MapNodeType.NavPoint)
             {
-                // NavPoint: check for patrol detection based on faction rep
-                var faction = node.PlanetFactionType;
-                int rep = player.GetReputation(faction);
-                int detectionChance = rep < 0 ? Mathf.Abs(rep) * 20 : 0; // -1 rep = 20%, -2 = 40%, etc.
-
-                if (Random.Range(0, 100) < detectionChance)
-                {
-                    result = ResolvePatrolCombat(player, faction);
-                }
-                else
-                {
-                    result = $"No patrol at {node.NodeName}. Safe passage.";
-                }
+                result = ResolvePatrolEncounter(player, node);
             }
-            else if (node != null && node.Type == MapNodeType.Planet)
+            else if (node.Type == MapNodeType.Planet)
             {
-                // Planet: resolve a basic planet encounter
                 result = ResolvePlanetEncounter(player, node);
             }
             else
@@ -66,48 +63,84 @@ namespace OuterRim
             GameManager.Instance?.NotifyEncounterComplete();
         }
 
-        private string ResolvePatrolCombat(PlayerState player, FactionType faction)
+        /// <summary>
+        /// Outer Rim patrol rules:
+        /// - Base detection chance: 2 in 6 (33%)
+        /// - Each negative reputation: +1 in 6 detection
+        /// - Each positive reputation: -1 in 6 detection (minimum 0)
+        /// - If detected: fight ship combat against patrol
+        /// - Patrol strength depends on faction
+        /// </summary>
+        private string ResolvePatrolEncounter(PlayerState player, MapNode node)
         {
-            // Simple patrol combat: roll dice
-            int playerDice = player.AttackDice.Value;
-            int patrolDice = 2;
-            int patrolHits = 0;
-            int playerHits = 0;
+            FactionType faction = node.PlanetFactionType;
+            int rep = player.GetReputation(faction);
+            
+            // Detection chance (Outer Rim: base 2/6, modified by reputation)
+            int detectionBase = 2;
+            int detectionMod = -rep; // negative rep increases detection, positive decreases
+            int detectionChance = Mathf.Clamp(detectionBase + detectionMod, 0, 5);
+            int roll = Random.Range(0, 6);
 
-            for (int i = 0; i < playerDice; i++)
-                if (Random.Range(0, 6) >= 3) playerHits++;
+            Debug.Log($"[Encounter] Patrol detection at {node.NodeName}: faction={faction}, rep={rep}, detection={detectionChance}/6, roll={roll}");
+
+            if (roll >= detectionChance)
+            {
+                return $"Slipped past {faction} patrol at {node.NodeName}. (detection {detectionChance}/6, rolled {roll})";
+            }
+
+            // Detected! Fight patrol
+            return FightPatrol(player, faction);
+        }
+
+        private string FightPatrol(PlayerState player, FactionType faction)
+        {
+            // Patrol strength by faction (Outer Rim rules)
+            int patrolDice = faction switch
+            {
+                FactionType.Authority => 3,  // Imperial patrols are stronger
+                FactionType.Syndicate => 2,
+                FactionType.Hutts     => 2,
+                FactionType.Rebels    => 2,
+                _ => 2
+            };
+
+            int playerDice = player.AttackDice.Value;
+            int patrolHits = 0, playerHits = 0;
+
             for (int i = 0; i < patrolDice; i++)
                 if (Random.Range(0, 6) >= 3) patrolHits++;
+            for (int i = 0; i < playerDice; i++)
+                if (Random.Range(0, 6) >= 3) playerHits++;
 
             if (playerHits > patrolHits)
             {
-                int fameGain = Random.Range(1, 3);
-                int creditGain = Random.Range(500, 2000);
+                int fameGain = faction == FactionType.Authority ? 2 : 1;
+                int creditGain = Random.Range(1000, 3000);
                 player.AddFame(fameGain);
                 player.AddCredits(creditGain);
                 player.ModifyReputation(faction, 1);
-                return $"Patrol defeated! +{fameGain} Fame, +{creditGain} Credits.";
+                return $"Defeated {faction} patrol! +{fameGain} Fame, +{creditGain} Credits.";
             }
             else
             {
                 int damage = patrolHits - playerHits;
                 player.TakeHullDamage(damage);
                 player.ModifyReputation(faction, -1);
-                return $"Patrol engagement lost! Took {damage} damage.";
+                return $"Lost to {faction} patrol! Took {damage} damage. Reputation -1.";
             }
         }
 
         private string ResolvePlanetEncounter(PlayerState player, MapNode node)
         {
-            // Simple planet encounter: skill check
-            int skillValue = player.GetSkillValue(SkillType.Cunning);
-            int diceCount = skillValue;
+            // Outer Rim: on planets, draw an encounter card for that planet type.
+            // Simplified: skill check with Cunning
+            int diceCount = player.GetSkillValue(SkillType.Cunning);
             int hits = 0;
-
             for (int i = 0; i < diceCount; i++)
                 if (Random.Range(0, 6) >= 3) hits++;
 
-            if (hits >= 1)
+            if (hits >= 2)
             {
                 int creditGain = Random.Range(1000, 3000);
                 player.AddCredits(creditGain);
@@ -115,7 +148,7 @@ namespace OuterRim
             }
             else
             {
-                return $"Nothing of interest at {node.NodeName}.";
+                return $"Nothing of interest at {node.NodeName}. (needed 2 hits, got {hits})";
             }
         }
 
@@ -128,7 +161,7 @@ namespace OuterRim
         [ClientRpc]
         private void NotifyEncounterResultClientRpc(ulong clientId, string result)
         {
-            Debug.Log($"[EncounterResolver] Player {clientId}: {result}");
+            Debug.Log($"[Encounter] Player {clientId}: {result}");
         }
     }
 }

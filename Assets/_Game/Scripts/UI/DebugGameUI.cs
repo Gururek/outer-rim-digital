@@ -1,5 +1,4 @@
-// DebugGameUI.cs — Minimal IMGUI debug panel for game loop testing.
-// No Canvas/EventSystem needed. Attach to a plain GameObject in the scene.
+// DebugGameUI.cs — IMGUI debug panel with Outer Rim rule actions
 using UnityEngine;
 using Unity.Netcode;
 
@@ -16,16 +15,14 @@ namespace OuterRim
             var net = NetworkManager.Singleton;
             if (net == null) return;
 
-            GUILayout.BeginArea(new Rect(10, 10, 360, 700));
+            GUILayout.BeginArea(new Rect(10, 10, 380, 750));
             try
             {
-                // Connection status
                 int clientCount = 0;
                 try { clientCount = net.IsServer ? net.ConnectedClients.Count : 0; }
                 catch { clientCount = 0; }
 
-                GUILayout.Label($"Status: {(net.IsConnectedClient ? "CONNECTED" : "OFFLINE")}");
-                GUILayout.Label($"Clients: {clientCount}");
+                GUILayout.Label($"Status: {(net.IsConnectedClient ? "CONNECTED" : "OFFLINE")} | Clients: {clientCount}");
 
                 if (!net.IsConnectedClient)
                 {
@@ -33,14 +30,8 @@ namespace OuterRim
                     if (GUILayout.Button("START HOST"))
                     {
                         var bootstrapper = FindObjectOfType<NetworkBootstrapper>();
-                        if (bootstrapper != null)
-                        {
-                            bootstrapper.StartHost();
-                        }
-                        else
-                        {
-                            statusMessage = "No NetworkBootstrapper in scene!";
-                        }
+                        if (bootstrapper != null) bootstrapper.StartHost();
+                        else statusMessage = "No NetworkBootstrapper!";
                     }
 
                     GUILayout.Label("Join Code:");
@@ -48,23 +39,15 @@ namespace OuterRim
                     if (GUILayout.Button("JOIN GAME") && !string.IsNullOrEmpty(joinCodeInput))
                     {
                         var bootstrapper = FindObjectOfType<NetworkBootstrapper>();
-                        if (bootstrapper != null)
-                        {
-                            bootstrapper.StartClient(joinCodeInput);
-                        }
+                        if (bootstrapper != null) bootstrapper.StartClient(joinCodeInput);
                     }
 
-                    if (!string.IsNullOrEmpty(statusMessage))
-                        GUILayout.Label(statusMessage);
+                    if (!string.IsNullOrEmpty(statusMessage)) GUILayout.Label(statusMessage);
                 }
                 else
                 {
                     var gm = GameManager.Instance;
-                    if (gm == null)
-                    {
-                        GUILayout.Label("Waiting for GameManager...");
-                        return;
-                    }
+                    if (gm == null) { GUILayout.Label("Waiting for GameManager..."); return; }
 
                     var ap = gm.GetActivePlayer();
                     bool isMyTurn = ap != null && ap.OwnerClientId == net.LocalClientId;
@@ -74,57 +57,69 @@ namespace OuterRim
 
                     if (ap != null)
                     {
-                        GUILayout.Label($"Current Node: {ap.CurrentNodeId.Value} | Speed: {ap.Speed.Value}");
-                        GUILayout.Label($"Fame: {ap.Fame.Value} | Credits: {ap.Credits.Value}");
-                        GUILayout.Label($"Health: {ap.Health.Value}/{ap.MaxHealth.Value} | Ship: {ap.ShipHealth.Value}/{ap.MaxShipHealth.Value}");
+                        GUILayout.Label($"Node: {ap.CurrentNodeId.Value} | Speed: {ap.Speed.Value} | Fame: {ap.Fame.Value}/{10}");
+                        GUILayout.Label($"Credits: {ap.Credits.Value} | Health: {ap.Health.Value}/{ap.MaxHealth.Value} | Ship: {ap.ShipHealth.Value}/{ap.MaxShipHealth.Value}");
+                        if (ap.IsDefeated.Value)
+                            GUILayout.Label("*** DEFEATED — must Heal next turn ***");
                     }
 
                     GUILayout.Space(10);
 
-                    // Phase-specific UI
                     switch (gm.CurrentPhase)
                     {
                         case GamePhase.PlanningPhase:
                             if (isMyTurn)
                             {
-                                GUILayout.Label("--- PLANNING ---");
-                                if (GUILayout.Button("MOVE SHIP"))
-                                    gm.SubmitPlanningChoiceServerRpc(PlanningChoice.MoveShip);
-                                if (GUILayout.Button("HEAL"))
-                                    gm.SubmitPlanningChoiceServerRpc(PlanningChoice.HealDamage);
-                                if (GUILayout.Button("COLLECT CREDITS (2000)"))
-                                    gm.SubmitPlanningChoiceServerRpc(PlanningChoice.CollectCredits);
+                                GUILayout.Label("--- PLANNING (choose 1) ---");
+                                if (ap != null && ap.IsDefeated.Value)
+                                    GUILayout.Label("You are defeated — Heal is chosen automatically.");
+                                else
+                                {
+                                    if (GUILayout.Button("MOVE SHIP")) gm.SubmitPlanningChoiceServerRpc(PlanningChoice.MoveShip);
+                                    if (GUILayout.Button("HEAL (full repair)")) gm.SubmitPlanningChoiceServerRpc(PlanningChoice.HealDamage);
+                                    if (GUILayout.Button("COLLECT CREDITS (+2000)")) gm.SubmitPlanningChoiceServerRpc(PlanningChoice.CollectCredits);
+                                }
                             }
                             break;
 
                         case GamePhase.ActionPhase:
                             if (isMyTurn && ap != null)
                             {
-                                GUILayout.Label("--- ACTION ---");
-                                GUILayout.Label("Move to node (ID):");
+                                GUILayout.Label("--- ACTION (any/all) ---");
+
+                                // Movement
+                                GUILayout.Label("Move to node ID:");
                                 nodeIdInput = GUILayout.TextField(nodeIdInput, GUILayout.Width(80));
-
                                 if (GUILayout.Button("MOVE TO NODE") && int.TryParse(nodeIdInput, out int destId))
-                                {
-                                    gm.ConfirmShipMovementServerRpc(destId);
-                                    nodeIdInput = "";
-                                }
+                                { gm.ConfirmShipMovementServerRpc(destId); nodeIdInput = ""; }
 
-                                // Show reachable nodes
                                 if (MapManager.Instance != null)
                                 {
                                     var reachable = MapManager.Instance.GetReachableNodes(ap.CurrentNodeId.Value, ap.Speed.Value);
                                     GUILayout.Label($"Reachable: [{string.Join(", ", reachable)}]");
                                 }
 
-                                if (GUILayout.Button("END ACTION"))
-                                    gm.EndActionPhaseServerRpc();
+                                GUILayout.Space(5);
+
+                                // Market actions (on planets)
+                                if (GUILayout.Button("BUY GEAR (if on planet)")) gm.BuyCardServerRpc(MarketDeckType.Gear, 0);
+                                if (GUILayout.Button("BUY MOD (if on planet)")) gm.BuyCardServerRpc(MarketDeckType.Mods, 0);
+
+                                GUILayout.Space(5);
+
+                                // Deliver / Complete
+                                if (GUILayout.Button("DELIVER CARGO (+2000cr, +1 fame)")) gm.DeliverCargoServerRpc(0);
+                                if (GUILayout.Button("COMPLETE BOUNTY (+5000cr, +2 fame)")) gm.CompleteBountyServerRpc(0);
+
+                                GUILayout.Space(5);
+
+                                if (GUILayout.Button("END ACTION → Encounter")) gm.EndActionPhaseServerRpc();
                             }
                             break;
 
                         case GamePhase.EncounterPhase:
                             GUILayout.Label("--- ENCOUNTER ---");
-                            GUILayout.Label("Encounter resolving... (auto)");
+                            GUILayout.Label("Resolving encounter... (auto)");
                             break;
 
                         case GamePhase.CheckingWinCondition:
@@ -137,10 +132,7 @@ namespace OuterRim
                     }
                 }
             }
-            finally
-            {
-                GUILayout.EndArea();
-            }
+            finally { GUILayout.EndArea(); }
         }
     }
 }
