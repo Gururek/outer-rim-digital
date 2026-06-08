@@ -70,9 +70,45 @@ namespace OuterRim
             encGo.AddComponent<Unity.Netcode.NetworkObject>();
             encGo.AddComponent<EncounterResolver>();
 
+        // Phase 2: Visual systems
+        {
+            var hrGo = new GameObject("HyperspaceLaneRenderer");
+            hrGo.transform.SetParent(mapGo.transform);
+            hrGo.AddComponent<HyperspaceLaneRenderer>();
+        }
+        {
+            var svmGo = new GameObject("ShipVisualManager");
+            svmGo.AddComponent<Unity.Netcode.NetworkObject>();
+            svmGo.AddComponent<ShipVisualManager>();
+        }
+
             // ShipMovement
+        // Phase 2: Visual systems
+        {
+            var hrGo = new GameObject("HyperspaceLaneRenderer");
+            hrGo.transform.SetParent(mapGo.transform);
+            hrGo.AddComponent<HyperspaceLaneRenderer>();
+        }
+        {
+            var svmGo = new GameObject("ShipVisualManager");
+            svmGo.AddComponent<Unity.Netcode.NetworkObject>();
+            svmGo.AddComponent<ShipVisualManager>();
+        }
+
             var smGo = new GameObject("ShipMovement");
             smGo.AddComponent<Unity.Netcode.NetworkObject>();
+        // Phase 2: Visual systems
+        {
+            var hrGo = new GameObject("HyperspaceLaneRenderer");
+            hrGo.transform.SetParent(mapGo.transform);
+            hrGo.AddComponent<HyperspaceLaneRenderer>();
+        }
+        {
+            var svmGo = new GameObject("ShipVisualManager");
+            svmGo.AddComponent<Unity.Netcode.NetworkObject>();
+            svmGo.AddComponent<ShipVisualManager>();
+        }
+
             smGo.AddComponent<ShipMovement>();
 
             // CombatResolver
