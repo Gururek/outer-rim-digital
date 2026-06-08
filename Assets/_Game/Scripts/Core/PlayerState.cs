@@ -7,29 +7,20 @@ namespace OuterRim
 {
     public class PlayerState : NetworkBehaviour
     {
-        // ─── Networked State (server-authoritative) ──────────────────────────
         public NetworkVariable<int> Fame = new NetworkVariable<int>(
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
         public NetworkVariable<int> Credits = new NetworkVariable<int>(
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
         public NetworkVariable<int> Health = new NetworkVariable<int>(
             5, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
         public NetworkVariable<int> MaxHealth = new NetworkVariable<int>(
             5, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
         public NetworkVariable<int> ShipHealth = new NetworkVariable<int>(
             3, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
         public NetworkVariable<int> MaxShipHealth = new NetworkVariable<int>(
             3, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
         public NetworkVariable<int> Speed = new NetworkVariable<int>(
             2, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
-        // Reputation per faction: Syndicate, Authority, Rebels, Hutts
         public NetworkVariable<int> SyndicateRep = new NetworkVariable<int>(
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         public NetworkVariable<int> AuthorityRep = new NetworkVariable<int>(
@@ -38,16 +29,10 @@ namespace OuterRim
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         public NetworkVariable<int> HuttsRep = new NetworkVariable<int>(
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
-        // Current map node ID
         public NetworkVariable<int> CurrentNodeId = new NetworkVariable<int>(
             -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
-        // Ship combat stats
         public NetworkVariable<int> AttackDice = new NetworkVariable<int>(
             2, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
-        // Skill values
         public NetworkVariable<int> CombatSkill = new NetworkVariable<int>(
             2, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         public NetworkVariable<int> PilotingSkill = new NetworkVariable<int>(
@@ -57,21 +42,14 @@ namespace OuterRim
         public NetworkVariable<int> TechSkill = new NetworkVariable<int>(
             1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        // Inventory: cargo, crew, gear, mods — synced for all to see
-        public NetworkList<CardInstanceData> Inventory;
+        public NetworkList<CardInstanceData> Inventory = new NetworkList<CardInstanceData>();
 
-        // Player name (set once on spawn, doesn't change)
         public NetworkVariable<Unity.Collections.FixedString32Bytes> PlayerName = new NetworkVariable<Unity.Collections.FixedString32Bytes>(
             default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
-        // Character ID reference
         public NetworkVariable<int> CharacterId = new NetworkVariable<int>(
             -1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        // ─── Client-side state ──────────────────────────────────────────────
         public bool IsMyTurn { get; private set; }
-
-        // ─── Public helpers ─────────────────────────────────────────────────
 
         public int GetReputation(FactionType faction)
         {
@@ -96,8 +74,6 @@ namespace OuterRim
                 case FactionType.Hutts: HuttsRep.Value += delta; break;
             }
         }
-
-        // ─── Resource methods (server-only) ────────────────────────────────
 
         public bool SpendCredits(int amount)
         {
@@ -125,14 +101,12 @@ namespace OuterRim
             ShipHealth.Value = Mathf.Max(0, ShipHealth.Value - amount);
             if (ShipHealth.Value <= 0 && Health.Value > 0)
             {
-                // Ship destroyed: damage scoundrel and respawn
                 Health.Value = Mathf.Max(0, Health.Value - 1);
                 ShipHealth.Value = MaxShipHealth.Value;
                 Debug.Log($"[PlayerState] Player {OwnerClientId} ship destroyed! Scoundrel health: {Health.Value}");
             }
         }
 
-        /// <summary>Get player's dice count for a given skill type.</summary>
         public int GetSkillValue(SkillType skill)
         {
             return skill switch
@@ -162,22 +136,7 @@ namespace OuterRim
         {
             if (IsOwner)
             {
-                // Request name from lobby or local settings
-                if (Unity.Services.Lobby.LobbyService.Instance.CurrentLobby != null)
-                {
-                    var localPlayer = Unity.Services.Lobby.LobbyService.Instance.CurrentLobby.Players
-                        .Find(p => p.Id == Unity.Services.Authentication.AuthenticationService.Instance.PlayerId);
-                    if (localPlayer != null)
-                    {
-                        SetPlayerNameServerRpc(localPlayer.Data?.ContainsKey("name") == true
-                            ? localPlayer.Data["name"].Value
-                            : $"Player {OwnerClientId}");
-                    }
-                }
-                else
-                {
-                    SetPlayerNameServerRpc($"Player {OwnerClientId}");
-                }
+                SetPlayerNameServerRpc($"Player {OwnerClientId}");
             }
         }
 

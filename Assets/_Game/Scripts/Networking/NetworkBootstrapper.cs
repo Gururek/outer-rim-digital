@@ -30,6 +30,11 @@ namespace OuterRim
 
         private void Start()
         {
+            if (NetworkManager.Singleton != null &&
+                NetworkManager.Singleton.NetworkConfig.NetworkTransport == null)
+            {
+                NetworkManager.Singleton.NetworkConfig.NetworkTransport = transport;
+            }
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         }
 
@@ -39,14 +44,12 @@ namespace OuterRim
                 NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
         }
 
-        /// <summary>Initialize Unity Services, sign in, create lobby, allocate Relay, start host.</summary>
         public async void StartHost()
         {
             try
             {
                 await InitializeServices();
 
-                // Create lobby
                 var lobbyOptions = new CreateLobbyOptions
                 {
                     IsPrivate = false,
@@ -59,11 +62,9 @@ namespace OuterRim
                 var lobby = await LobbyService.Instance.CreateLobbyAsync(
                     "Outer Rim Game", maxPlayers, lobbyOptions);
 
-                // Allocate Relay
                 var allocation = await RelayService.Instance.CreateAllocationAsync(maxPlayers);
                 currentJoinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
-                // Update lobby with join code
                 await LobbyService.Instance.UpdateLobbyAsync(lobby.Id, new UpdateLobbyOptions
                 {
                     Data = new System.Collections.Generic.Dictionary<string, DataObject>
@@ -72,15 +73,15 @@ namespace OuterRim
                     }
                 });
 
-                // Set Relay transport data
                 transport.SetHostRelayData(
                     allocation.RelayServer.IpV4,
-                    allocation.RelayServer.Port,
+                    (ushort)allocation.RelayServer.Port,
                     allocation.AllocationIdBytes,
                     allocation.Key,
                     allocation.ConnectionData);
 
-                // Start host
+                EnsurePlayerPrefab();
+
                 NetworkManager.Singleton.StartHost();
                 Debug.Log($"[NetworkBootstrapper] Host started. Join code: {currentJoinCode}");
             }
@@ -90,7 +91,6 @@ namespace OuterRim
             }
         }
 
-        /// <summary>Initialize Unity Services, join lobby by code, join Relay, start client.</summary>
         public async void StartClient(string joinCode = null)
         {
             try
@@ -104,27 +104,22 @@ namespace OuterRim
                     return;
                 }
 
-                // Join lobby by code
                 var lobby = await LobbyService.Instance.JoinLobbyByCodeAsync(code);
 
-                // Retrieve Relay join code from lobby data
                 string relayJoinCode = code;
                 if (lobby.Data.TryGetValue("joinCode", out var dataObj))
                     relayJoinCode = dataObj.Value;
 
-                // Join Relay
                 var joinAllocation = await RelayService.Instance.JoinAllocationAsync(relayJoinCode);
 
-                // Set Relay transport data
                 transport.SetClientRelayData(
                     joinAllocation.RelayServer.IpV4,
-                    joinAllocation.RelayServer.Port,
+                    (ushort)joinAllocation.RelayServer.Port,
                     joinAllocation.AllocationIdBytes,
                     joinAllocation.Key,
                     joinAllocation.ConnectionData,
                     joinAllocation.HostConnectionData);
 
-                // Start client
                 NetworkManager.Singleton.StartClient();
                 Debug.Log($"[NetworkBootstrapper] Client connecting to lobby: {lobby.Id}");
             }
@@ -143,13 +138,25 @@ namespace OuterRim
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
         }
 
-        /// <summary>Server spawns player objects when clients connect.</summary>
+        private void EnsurePlayerPrefab()
+        {
+            if (NetworkManager.Singleton.NetworkConfig.PlayerPrefab != null) return;
+
+            var playerGo = new GameObject("Player");
+            playerGo.AddComponent<NetworkObject>();
+            playerGo.AddComponent<PlayerState>();
+
+            playerGo.hideFlags = HideFlags.HideInHierarchy;
+            DontDestroyOnLoad(playerGo);
+
+            NetworkManager.Singleton.AddNetworkPrefab(playerGo);
+            NetworkManager.Singleton.NetworkConfig.PlayerPrefab = playerGo;
+            Debug.Log("[NetworkBootstrapper] Player prefab registered for auto-spawn.");
+        }
+
         private void OnClientConnected(ulong clientId)
         {
             if (!NetworkManager.Singleton.IsServer) return;
-
-            // Spawn network manager child objects — GameManager, MapManager etc
-            // Player spawning is handled by NetworkManager's PlayerPrefab
             Debug.Log($"[NetworkBootstrapper] Client {clientId} connected.");
         }
     }

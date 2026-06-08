@@ -19,7 +19,6 @@ namespace OuterRim
         [Header("Player Config")]
         [SerializeField] private int minPlayersToStart = 2;
 
-        // ─── Networked State ─────────────────────────────────────────────────
         private NetworkVariable<GamePhase> currentPhase = new NetworkVariable<GamePhase>(
             GamePhase.WaitingForPlayers,
             NetworkVariableReadPermission.Everyone,
@@ -35,34 +34,29 @@ namespace OuterRim
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
-        // ─── Server-Only State ───────────────────────────────────────────────
         private List<PlayerState> turnOrder = new List<PlayerState>();
         private bool planningChoiceMade = false;
         private System.Random rng;
 
-        // ─── Public Accessors ────────────────────────────────────────────────
         public GamePhase CurrentPhase => currentPhase.Value;
         public int CurrentTurnNumber => turnNumber.Value;
         public List<PlayerState> TurnOrder => turnOrder;
 
-        // ─── Events ──────────────────────────────────────────────────────────
         public System.Action<GamePhase> OnPhaseChanged;
         public System.Action<PlayerState> OnTurnStarted;
         public System.Action<ulong> OnGameOver;
-
-        // ═════════════════════════════════════════════════════════════════════
-        // LIFECYCLE
-        // ═════════════════════════════════════════════════════════════════════
 
         private void Awake()
         {
             if (Instance == null) Instance = this;
             else { Destroy(gameObject); return; }
             rng = new System.Random();
+            Debug.Log($"[GameManager] Awake. IsServer={IsServer}, IsClient={IsClient}");
         }
 
         public override void OnNetworkSpawn()
         {
+            Debug.Log($"[GameManager] OnNetworkSpawn. IsServer={IsServer}");
             currentPhase.OnValueChanged += HandlePhaseChanged;
             currentPlayerIndex.OnValueChanged += HandleActivePlayerChanged;
 
@@ -76,18 +70,16 @@ namespace OuterRim
             currentPlayerIndex.OnValueChanged -= HandleActivePlayerChanged;
         }
 
-        // ═════════════════════════════════════════════════════════════════════
-        // GAME START
-        // ═════════════════════════════════════════════════════════════════════
-
         private IEnumerator WaitForPlayersCoroutine()
         {
+            Debug.Log($"[GameManager] WaitForPlayers: waiting for {minPlayersToStart} players. Connected: {NetworkManager.Singleton.ConnectedClients.Count}");
             yield return new WaitUntil(
                 () => NetworkManager.Singleton.ConnectedClients.Count >= minPlayersToStart);
 
             yield return new WaitForSeconds(0.5f);
 
             CollectAndOrderPlayers();
+            Debug.Log($"[GameManager] Players collected: {turnOrder.Count}. Transitioning to PlanningPhase.");
             TransitionToPhase(GamePhase.PlanningPhase);
         }
 
@@ -98,15 +90,24 @@ namespace OuterRim
             {
                 var playerObj = kvp.Value.PlayerObject;
                 if (playerObj != null && playerObj.TryGetComponent(out PlayerState ps))
+                {
+                    ps.CurrentNodeId.Value = 0;
                     turnOrder.Add(ps);
+                }
+                else
+                {
+                    var go = new GameObject($"Player_{kvp.Key}");
+                    var netObj = go.AddComponent<NetworkObject>();
+                    var newPs = go.AddComponent<PlayerState>();
+                    netObj.SpawnWithOwnership(kvp.Key);
+                    newPs.CurrentNodeId.Value = 0;
+                    turnOrder.Add(newPs);
+                    Debug.Log($"[GameManager] Auto-spawned PlayerState for client {kvp.Key}");
+                }
             }
             Shuffle(turnOrder);
             currentPlayerIndex.Value = 0;
         }
-
-        // ═════════════════════════════════════════════════════════════════════
-        // PHASE STATE MACHINE
-        // ═════════════════════════════════════════════════════════════════════
 
         private void TransitionToPhase(GamePhase newPhase)
         {
@@ -114,8 +115,14 @@ namespace OuterRim
 
             planningChoiceMade = false;
             currentPhase.Value = newPhase;
+            Debug.Log($"[GameManager] TransitionToPhase: {newPhase}");
 
             var activePlayer = GetActivePlayer();
+            if (activePlayer == null && newPhase != GamePhase.CheckingWinCondition)
+            {
+                Debug.LogWarning($"[GameManager] No active player for phase {newPhase} — skipping.");
+                return;
+            }
 
             switch (newPhase)
             {
@@ -130,6 +137,8 @@ namespace OuterRim
 
                 case GamePhase.EncounterPhase:
                     BeginEncounterPhaseClientRpc(activePlayer.OwnerClientId);
+                    if (EncounterResolver.Instance != null)
+                        EncounterResolver.Instance.ResolveEncounter(activePlayer);
                     break;
 
                 case GamePhase.CheckingWinCondition:
@@ -157,10 +166,6 @@ namespace OuterRim
             OnPhaseChanged?.Invoke(GamePhase.EncounterPhase);
         }
 
-        // ═════════════════════════════════════════════════════════════════════
-        // PLANNING PHASE
-        // ═════════════════════════════════════════════════════════════════════
-
         [ServerRpc(RequireOwnership = false)]
         public void SubmitPlanningChoiceServerRpc(PlanningChoice choice, ServerRpcParams rpcParams = default)
         {
@@ -176,13 +181,11 @@ namespace OuterRim
                 case PlanningChoice.MoveShip:
                     TransitionToPhase(GamePhase.ActionPhase);
                     break;
-
                 case PlanningChoice.HealDamage:
                     player.Health.Value = player.MaxHealth.Value;
                     player.ShipHealth.Value = player.MaxShipHealth.Value;
                     AdvanceTurn();
                     break;
-
                 case PlanningChoice.CollectCredits:
                     player.Credits.Value += creditsForResting;
                     AdvanceTurn();
@@ -190,11 +193,6 @@ namespace OuterRim
             }
         }
 
-        // ═════════════════════════════════════════════════════════════════════
-        // ACTION PHASE
-        // ═════════════════════════════════════════════════════════════════════
-
-        /// <summary>Server validates and executes a ship movement during Action Phase.</summary>
         [ServerRpc(RequireOwnership = false)]
         public void ConfirmShipMovementServerRpc(int destinationNodeId, ServerRpcParams rpcParams = default)
         {
@@ -206,7 +204,6 @@ namespace OuterRim
                 ShipMovement.Instance.TryMovePlayer(player, destinationNodeId);
         }
 
-        /// <summary>Buy a card from the market row during Action Phase.</summary>
         [ServerRpc(RequireOwnership = false)]
         public void BuyCardServerRpc(MarketDeckType deckType, int rowIndex, ServerRpcParams rpcParams = default)
         {
@@ -217,7 +214,6 @@ namespace OuterRim
             DeckManager.Instance?.TryPurchaseCard(player, deckType, rowIndex);
         }
 
-        /// <summary>Cycle a market row card during Action Phase (costs credits).</summary>
         [ServerRpc(RequireOwnership = false)]
         public void CycleCardServerRpc(MarketDeckType deckType, int rowIndex, ServerRpcParams rpcParams = default)
         {
@@ -237,34 +233,22 @@ namespace OuterRim
             TransitionToPhase(GamePhase.EncounterPhase);
         }
 
-        // ═════════════════════════════════════════════════════════════════════
-        // ENCOUNTER PHASE
-        // ═════════════════════════════════════════════════════════════════════
-
-        /// <summary>Called by CombatResolver when an encounter fully resolves.</summary>
         public void NotifyEncounterComplete()
         {
             if (!IsServer) return;
             if (currentPhase.Value != GamePhase.EncounterPhase) return;
-
             TransitionToPhase(GamePhase.CheckingWinCondition);
         }
-
-        // ═════════════════════════════════════════════════════════════════════
-        // TURN MANAGEMENT
-        // ═════════════════════════════════════════════════════════════════════
 
         public void AdvanceTurn()
         {
             if (!IsServer) return;
-
             int nextIndex = currentPlayerIndex.Value + 1;
             if (nextIndex >= turnOrder.Count)
             {
                 nextIndex = 0;
                 turnNumber.Value++;
             }
-
             currentPlayerIndex.Value = nextIndex;
             TransitionToPhase(GamePhase.PlanningPhase);
         }
@@ -276,14 +260,9 @@ namespace OuterRim
             return index >= 0 && index < turnOrder.Count ? turnOrder[index] : null;
         }
 
-        // ═════════════════════════════════════════════════════════════════════
-        // WIN CONDITION
-        // ═════════════════════════════════════════════════════════════════════
-
         private void CheckWinCondition()
         {
             if (!IsServer) return;
-
             foreach (var player in turnOrder)
             {
                 if (player.Fame.Value >= fameToWin)
@@ -294,8 +273,6 @@ namespace OuterRim
                     return;
                 }
             }
-
-            // No winner yet — advance to next player
             AdvanceTurn();
         }
 
@@ -306,10 +283,6 @@ namespace OuterRim
             OnGameOver?.Invoke(winnerClientId);
         }
 
-        // ═════════════════════════════════════════════════════════════════════
-        // VALIDATION
-        // ═════════════════════════════════════════════════════════════════════
-
         private bool ValidateActivePlayer(ulong senderClientId)
         {
             if (!IsServer) return false;
@@ -318,10 +291,6 @@ namespace OuterRim
             return active.OwnerClientId == senderClientId;
         }
 
-        // ═════════════════════════════════════════════════════════════════════
-        // NETWORK VARIABLE HANDLERS
-        // ═════════════════════════════════════════════════════════════════════
-
         private void HandlePhaseChanged(GamePhase previous, GamePhase current)
         {
             OnPhaseChanged?.Invoke(current);
@@ -329,16 +298,11 @@ namespace OuterRim
 
         private void HandleActivePlayerChanged(int previous, int current)
         {
-            // Mark previous player inactive, current active
             if (previous >= 0 && previous < turnOrder.Count)
                 turnOrder[previous].SetTurnActive(false);
             if (current >= 0 && current < turnOrder.Count)
                 turnOrder[current].SetTurnActive(true);
         }
-
-        // ═════════════════════════════════════════════════════════════════════
-        // HELPERS
-        // ═════════════════════════════════════════════════════════════════════
 
         private void Shuffle<T>(List<T> list)
         {
