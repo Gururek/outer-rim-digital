@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: DB_10_BlackSunAgent
+  m_EditorClassIdentifier: Assembly-CSharp:OuterRim:DatabankCard
+  CardNumber: 10
+  CardName: Black Sun Agent
+  Description: "Black Sun Agent \u2014 Syndicate contact. Class: White. Bounty: 3000cr.
+    Combat: 2."
+  Faction: 1
+  ContactClass: 0
+  BountyReward: 3000
+  CombatValue: 2
+  CardArt: {fileID: 0}
