@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 1
   BuyCost: 2000
   SellValue: 1000
-  EffectDescription: 
+  EffectDescription: Cannot buy on Cantonica. To deliver, roll a die. On a *, deliver
+    this. Otherwise, resolve card #1.
   DeliveryPlanetId: Cantonica
   DeliveryReward: 0
   IsIllegal: 1

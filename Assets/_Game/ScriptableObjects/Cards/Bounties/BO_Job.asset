@@ -19,7 +19,12 @@ MonoBehaviour:
   DeckType: 0
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: 'You see a familiar name on the bounty board. It seems that
+    they have crossed the wrong people. Destination: A space containing another player
+    that has at least ''1 Reputation.'' Encounter: Resolve a combat against that
+    player. If you win, claim this reward. Reward: If you won combat against a player
+    who has more fame than you, gain ''5000 and 2 Fame. Otherwise, gain ''5000 and
+    1 Fame.'' Then discard this card.'
   TargetName: Job
   IssuingFaction: 0
   RewardCredits: 0

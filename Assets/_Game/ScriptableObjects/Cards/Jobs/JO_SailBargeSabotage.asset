@@ -19,7 +19,9 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: 'Choose another player in your space, and you resolve card #59.
+    (If either player is defeated during this job, the job fails.)  Reward: You and
+    the chosen player each gain 10,000. Then, remove this card from the game.'
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0

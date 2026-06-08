@@ -19,7 +19,7 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: ARMOR Gain +2. Limit 1 ARMOR per character.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

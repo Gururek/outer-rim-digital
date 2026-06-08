@@ -19,7 +19,7 @@ MonoBehaviour:
   DeckType: 5
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: Gain this ship's sheet and remove this card from the game.
   Hyperdrive: 4
   MaxHull: 3
   CargoSlots: 1

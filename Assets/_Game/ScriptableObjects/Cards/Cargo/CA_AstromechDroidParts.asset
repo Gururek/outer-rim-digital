@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 1
   BuyCost: 1000
   SellValue: 500
-  EffectDescription: 
+  EffectDescription: "Rotate card instead of discarding. Flip side: Astromech Droids
+    \u2192 deliver to Naboo for 12000cr."
   DeliveryPlanetId: Ord Mantell
   DeliveryReward: 5000
   IsIllegal: 0

@@ -19,7 +19,9 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: 'Resolve combat against player with negative rep. If you win
+    and they have more fame: +5000cr +2 fame. Otherwise: +5000cr +1 fame. Discard
+    after.'
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0

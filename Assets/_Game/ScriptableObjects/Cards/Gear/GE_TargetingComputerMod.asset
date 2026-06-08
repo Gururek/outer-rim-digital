@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: Once per ship combat, you may reroll any number of your blank
+    dice.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

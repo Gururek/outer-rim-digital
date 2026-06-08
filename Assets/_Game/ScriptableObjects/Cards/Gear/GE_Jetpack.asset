@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: During ground combat, cancel 1 of your opponent's*. If you have
+    Tactics, you may instead cancel 1*.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: During ship combat, cancel 1 of your opponent's [redacted].
+    If you have Tactics, you may instead cancel 1 [redacted].
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

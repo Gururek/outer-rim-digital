@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 1
   BuyCost: 3000
   SellValue: 1500
-  EffectDescription: 
+  EffectDescription: 'Roll a die to deliver. On Hit/Crit: succeed. Otherwise: resolve
+    card #1.'
   DeliveryPlanetId: The Ring of Kafrene
   DeliveryReward: 9000
   IsIllegal: 1

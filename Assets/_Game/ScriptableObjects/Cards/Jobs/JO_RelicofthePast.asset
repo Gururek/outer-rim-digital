@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: You have uncovered information about an underwater temple on
+    Mon Calamari. Surely there is something of worth there. Cannot buy on Mon Calamari.
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0

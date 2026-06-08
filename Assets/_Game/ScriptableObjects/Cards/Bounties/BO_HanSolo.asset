@@ -22,7 +22,7 @@ MonoBehaviour:
   EffectDescription: 
   TargetName: Han Solo
   IssuingFaction: 0
-  RewardCredits: 0
-  RewardFame: 0
+  RewardCredits: 11000
+  RewardFame: 2
   ContactClass: 0
   CombatValue: 4

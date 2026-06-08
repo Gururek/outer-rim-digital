@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: During ship combat, if you have Tactics, your opponent rolls
+    1 fewer die.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

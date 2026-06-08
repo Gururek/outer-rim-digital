@@ -19,7 +19,7 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: 'Gain +1 . Action: Recover 1 damage from your ship.'
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

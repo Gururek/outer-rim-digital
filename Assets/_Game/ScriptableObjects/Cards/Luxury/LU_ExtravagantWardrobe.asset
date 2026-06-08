@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: While you have 2 or 3 reputations, you have 1 additional fame.
+    While you have 4+ reputations, you have 2 additional fame.
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

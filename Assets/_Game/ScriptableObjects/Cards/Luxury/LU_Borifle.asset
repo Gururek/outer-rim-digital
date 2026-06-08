@@ -19,7 +19,7 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: 'Gain +3 . Action: Rotate this card.'
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

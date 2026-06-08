@@ -19,4 +19,5 @@ MonoBehaviour:
   DeckType: 0
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: 'You cannot discard this job without completing it. Action:
+    Choose and other player in your space and complete this job.'

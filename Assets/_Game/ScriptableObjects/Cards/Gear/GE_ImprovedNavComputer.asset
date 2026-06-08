@@ -19,7 +19,7 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 3000
   SellValue: 1500
-  EffectDescription: 
+  EffectDescription: Gain +1 E-Scout.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

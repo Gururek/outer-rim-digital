@@ -19,4 +19,5 @@ MonoBehaviour:
   DeckType: 0
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: The Bounty Hunter can be used to deliver bounties on any planet.
+    The bounty must have a value of at least $2.

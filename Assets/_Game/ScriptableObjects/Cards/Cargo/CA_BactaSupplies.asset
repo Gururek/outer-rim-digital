@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 1
   BuyCost: 1000
   SellValue: 500
-  EffectDescription: 
+  EffectDescription: If you are not a droid (i), discard this card to recover all
+    damage from your character.
   DeliveryPlanetId: Takodana
   DeliveryReward: 6000
   IsIllegal: 0

@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 0
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: After you gain a reward from this card, remove this card from
+    the game.
   TargetName: Chopper
   IssuingFaction: 0
   RewardCredits: 0

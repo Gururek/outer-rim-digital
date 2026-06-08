@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 10000
   SellValue: 5000
-  EffectDescription: 
+  EffectDescription: 'Action: If a player in your space has more fame than you, discard
+    this card to gain 1 fame and make that player lose 1 reputation of your choice.'
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

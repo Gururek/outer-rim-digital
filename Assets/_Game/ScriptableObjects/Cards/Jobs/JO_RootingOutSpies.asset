@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: Maz senses that there are Imperial agents in her midst, and
+    she has asked for help rooting out the spies. Cannot buy on Takodana.
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0

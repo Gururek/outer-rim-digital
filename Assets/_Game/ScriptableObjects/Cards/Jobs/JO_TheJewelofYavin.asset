@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: 'Cannot buy on Naboo. Destination: Naboo Encounter: Solve card
+    #45.  Reward: Gain 15,000 and 1 fame. Then remove this card from the game.'
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0

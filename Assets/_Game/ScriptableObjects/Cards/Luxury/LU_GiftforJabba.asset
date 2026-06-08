@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 4
   SellValue: 2
-  EffectDescription: 
+  EffectDescription: 'Cannot buy on Tatooine. When you become defeated, discard 1
+    of your crew. Destination: Tatooine Reward: Gain 2 fame and 1 Hutt reputation.'
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: Gain +1 Armor. During ground combat, you suffer 1 fewer damage.
+    Limit 1 Armor per character.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

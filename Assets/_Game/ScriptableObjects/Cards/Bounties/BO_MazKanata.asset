@@ -22,7 +22,7 @@ MonoBehaviour:
   EffectDescription: 
   TargetName: Maz Kanata
   IssuingFaction: 0
-  RewardCredits: 0
-  RewardFame: 0
+  RewardCredits: 5000
+  RewardFame: 2
   ContactClass: 0
   CombatValue: 5

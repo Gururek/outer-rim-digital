@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: "After you roll dice during ground combat, you may rotate this
+    card to add 2 \u2728."
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

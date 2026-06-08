@@ -19,4 +19,6 @@ MonoBehaviour:
   DeckType: 0
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: The last thing you need is unwanted attention. You may test
+    Stealth. If you pass, you may take an additional turn. If you fail, lose 1 reputation
+    with a patrol in your space.

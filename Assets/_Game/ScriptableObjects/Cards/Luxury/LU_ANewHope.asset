@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: You may choose a planet from the board and add it to your tableau
+    as an additional delivery planet. You must pay its cost.
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

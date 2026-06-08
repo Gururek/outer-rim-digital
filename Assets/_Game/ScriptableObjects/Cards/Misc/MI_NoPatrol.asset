@@ -19,4 +19,9 @@ MonoBehaviour:
   DeckType: 0
   BuyCost: 7
   SellValue: 3
-  EffectDescription: 
+  EffectDescription: '[''If you have [image] or [image] Rebel reputation: You experience
+    engine trouble and send out a distress signal. Move the Rebel patrol directly
+    to your space. Then recover all damage from your ship.'', "If you have [image]
+    Rebel reputation: You don''t notice the space mines until you''re almost on top
+    of them. Explosive maneuvers Test Piloting. If you fail, your ship suffers 3
+    damage."]'

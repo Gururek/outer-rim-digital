@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: During ground combat, you may turn 1 of your results to a *.
+    If you have Stealth or Strength, gain +1.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

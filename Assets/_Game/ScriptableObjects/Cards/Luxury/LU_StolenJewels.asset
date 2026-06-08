@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 10000
   SellValue: 5000
-  EffectDescription: 
+  EffectDescription: 'Action: Choose another player in your space and discard this
+    card. You both gain 7,000 and 1 fame.'
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

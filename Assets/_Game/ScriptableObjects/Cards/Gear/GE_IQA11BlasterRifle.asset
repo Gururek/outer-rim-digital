@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 5000
   SellValue: 2500
-  EffectDescription: 
+  EffectDescription: Gain +1. When you win a ground combat, you suffer a maximum
+    of 2 damage.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

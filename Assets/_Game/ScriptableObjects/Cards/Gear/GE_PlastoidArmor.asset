@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 8000
   SellValue: 4000
-  EffectDescription: 
+  EffectDescription: Gain +2 Armor. During ground combat, if you have Strength, your
+    opponent rolls 1 fewer die. Limit 1 Armor per character.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

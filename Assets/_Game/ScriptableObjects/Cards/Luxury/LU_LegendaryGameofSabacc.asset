@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 10000
   SellValue: 5000
-  EffectDescription: 
+  EffectDescription: 'Destination: Another player''s space. Encounter: Choose another
+    player in your space, and you resolve card #40.'
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

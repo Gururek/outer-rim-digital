@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: When you complete a job, you may reduce the job's credit reward
+    to [7] or gain 1 additional fame.
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

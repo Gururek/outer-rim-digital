@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: When you deliver ILLEGAL cargo, you may reduce the cargo's credit
+    reward to [REDACTED] to gain 1 additional fame.
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

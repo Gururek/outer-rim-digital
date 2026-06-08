@@ -19,4 +19,6 @@ MonoBehaviour:
   DeckType: 0
   BuyCost: 10
   SellValue: 5
-  EffectDescription: 
+  EffectDescription: The Droid Gunship is a powerful ground combat vehicle. It has
+    superior firepower and armor compared to most other vehicles, making it an excellent
+    choice for taking on large groups of enemies.

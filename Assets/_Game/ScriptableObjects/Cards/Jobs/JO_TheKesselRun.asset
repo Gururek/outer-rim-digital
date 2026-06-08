@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: Deep under the surface of Kessel is a rich vein of coaxium ore.
+    You've been hired to steal some. Cannot buy on Kessel.
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0

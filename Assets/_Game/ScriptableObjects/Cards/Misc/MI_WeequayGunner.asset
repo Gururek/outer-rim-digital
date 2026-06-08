@@ -19,4 +19,5 @@ MonoBehaviour:
   DeckType: 0
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: During ship combat, you may turn 1 of your results to a [O]
+    result.

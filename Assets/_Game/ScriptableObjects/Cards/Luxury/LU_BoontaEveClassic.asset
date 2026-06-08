@@ -19,7 +19,9 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 10000
   SellValue: 5000
-  EffectDescription: 
+  EffectDescription: The Boonta Eve Classic podrace draws the best pilots from around
+    the galaxy to compete for fame and fortune. Fans tune in not just for the dizzying
+    speeds but also for the spectacular crashes.
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

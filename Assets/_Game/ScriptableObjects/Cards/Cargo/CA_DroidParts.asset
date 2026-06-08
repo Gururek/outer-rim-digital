@@ -19,7 +19,7 @@ MonoBehaviour:
   DeckType: 1
   BuyCost: 4
   SellValue: 2
-  EffectDescription: 
+  EffectDescription: Cannot buy on Ord Mantell.
   DeliveryPlanetId: Ord Mantell
   DeliveryReward: 5000
   IsIllegal: 0

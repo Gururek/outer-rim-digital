@@ -19,7 +19,7 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 2000
   SellValue: 1000
-  EffectDescription: 
+  EffectDescription: Gain +1 C.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

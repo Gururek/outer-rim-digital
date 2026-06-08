@@ -10,17 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: Cargo_Medical
-  m_EditorClassIdentifier: Assembly-CSharp:OuterRim:CargoCardData
-  CardId: 4
-  CardName: Medical Supplies
+  m_Name: BO_Test
+  m_EditorClassIdentifier: Assembly-CSharp:OuterRim:BountyCardData
+  CardId: 9999
+  CardName: TestBounty
   FlavorText: 
   CardArt: {fileID: 0}
-  DeckType: 1
-  BuyCost: 800
-  SellValue: 400
-  EffectDescription: Deliver medical supplies. +2000cr.
-  DeliveryPlanetId: 
-  DeliveryReward: 2000
-  IsIllegal: 0
-  IllegalFameReward: 0
+  DeckType: 0
+  BuyCost: 1000
+  SellValue: 0
+  EffectDescription: 
+  TargetName: 
+  IssuingFaction: 0
+  RewardCredits: 0
+  RewardFame: 0
+  ContactClass: 0
+  CombatValue: 3

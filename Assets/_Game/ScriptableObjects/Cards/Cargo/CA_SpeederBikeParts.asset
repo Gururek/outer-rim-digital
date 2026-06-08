@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 1
   BuyCost: 1000
   SellValue: 500
-  EffectDescription: 
+  EffectDescription: 'Cannot buy on Lothal. Rotation: This card may be rotated instead
+    of discarded when it is used.'
   DeliveryPlanetId: Lothal
   DeliveryReward: 5000
   IsIllegal: 0

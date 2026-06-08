@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: Before you perform a skill test, you may gain a skill of your
+    choice for that test. If you pass the test, discard this crew.
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0

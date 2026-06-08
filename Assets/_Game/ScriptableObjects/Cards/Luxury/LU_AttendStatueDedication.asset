@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: Gain 1 fame. You may spend  10,000 to gain 1 additional fame.
+    Then remove this card from the game.
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

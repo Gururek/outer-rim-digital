@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 1
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: '*To buy, roll a die. On a *, buy this. Otherwise, resolve card
+    #96.'
   DeliveryPlanetId: Imperial patrol
   DeliveryReward: 5000
   IsIllegal: 1

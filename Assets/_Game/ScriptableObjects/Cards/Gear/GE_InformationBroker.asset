@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 2000
   SellValue: 1000
-  EffectDescription: 
+  EffectDescription: Choose a planet without players. Reveal all contact tokens on
+    that planet. Shuffle this card back into the market deck.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

@@ -19,7 +19,9 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: 'Choose another player in your space and resolve card #57. Encounter:
+    Choose another player in your space, and choose one of their gear with a cost
+    of $8,000 or less.'
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0

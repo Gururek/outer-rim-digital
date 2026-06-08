@@ -19,4 +19,8 @@ MonoBehaviour:
   DeckType: 0
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: '[''PLANNING STEP - Do the first that applies: a. If defeated,
+    recover all damage.\nb. Move toward closest goal.\nc. Gain $7,200.'', "ACTION
+    STEP - Do all that apply:\nIf at cargo destination, deliver it. If\n  At cargo
+    destination, deliver it. If \n   cargo is ILLEGAL, character suffers\n     2
+    damage.\nBuy & place a goal token on card''s destination."]'

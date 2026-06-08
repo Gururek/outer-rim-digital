@@ -19,7 +19,9 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 10
   SellValue: 5
-  EffectDescription: 
+  EffectDescription: "While you have 2 or more crew, you have 1 additional fame.
+    Action: If you are at a navpoint, roll 1 die for each crew you have. For each
+    \u2063 result, gain 7,000."
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

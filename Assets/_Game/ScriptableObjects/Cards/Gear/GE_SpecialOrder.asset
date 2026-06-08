@@ -19,7 +19,10 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 2000
   SellValue: 1000
-  EffectDescription: 
+  EffectDescription: Choose "gear" or "mod" out loud. Reveal cards from the top of
+    the [Market Deck] until 2 cards of the chosen type are revealed. Be revealed.
+    You may buy 1 of the revealed cards of the chosen type. Shuffle this card and
+    the unpurchased cards back into the [Market Deck].
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

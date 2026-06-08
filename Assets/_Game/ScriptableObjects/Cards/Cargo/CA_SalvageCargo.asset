@@ -19,7 +19,7 @@ MonoBehaviour:
   DeckType: 1
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: Cannot buy on Mon Calamari.
   DeliveryPlanetId: Mon Calamari
   DeliveryReward: 5000
   IsIllegal: 0

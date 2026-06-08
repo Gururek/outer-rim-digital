@@ -19,4 +19,5 @@ MonoBehaviour:
   DeckType: 0
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: '[''PLANNING STEP - Do the first that applies:'', ''a. If defeated,
+    recover all damage.'', ''b. Move toward closest goal.'', ''c. Gain $2,000.'']'

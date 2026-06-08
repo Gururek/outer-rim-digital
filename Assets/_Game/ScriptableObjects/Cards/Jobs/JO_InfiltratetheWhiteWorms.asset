@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: 'Cannot buy on the Trailing Core. Destination: The Trailing
+    Core Encounter: Resolve card #58.'
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0

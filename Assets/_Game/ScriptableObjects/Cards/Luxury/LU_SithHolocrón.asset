@@ -19,7 +19,9 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 15000
   SellValue: 7500
-  EffectDescription: 
+  EffectDescription: 'When you purchase this, the nearest player chooses a planet
+    and places a credit token on it. Destination: Planet with a credit token. Reward:
+    Gain 2 fame.'
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

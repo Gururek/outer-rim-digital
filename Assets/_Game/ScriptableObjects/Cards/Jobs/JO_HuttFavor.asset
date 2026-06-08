@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: 'Encounter: Test Influence. If you pass, complete this job.
+    If you fail, resolve card #41.'
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0

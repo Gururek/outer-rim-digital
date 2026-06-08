@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 5000
   SellValue: 2500
-  EffectDescription: 
+  EffectDescription: When resolving a bounty, gain +1 Combat. If you do, cannot eliminate
+    the contact (must capture).
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

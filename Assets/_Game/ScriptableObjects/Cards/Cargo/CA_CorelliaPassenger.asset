@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 1
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: Cannot buy on the Trailing Core. You may move directly to the
+    Spinward Core.
   DeliveryPlanetId: The Trailing Core
   DeliveryReward: 0
   IsIllegal: 0

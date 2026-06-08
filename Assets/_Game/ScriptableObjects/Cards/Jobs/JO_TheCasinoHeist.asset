@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: The casino has more credits than they know what to do with.
+    No one will notice if you skim a little off the top, right? Cannot buy on Cantonica.
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0

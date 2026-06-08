@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: "Gain +1 \u2694\uFE0F. During ground combat, if you have Strength,
+    you may turn 1 of your \u2694\uFE0F results to a \u2728."
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 10000
   SellValue: 5000
-  EffectDescription: 
+  EffectDescription: After gaining a crew from an orange contact, spend 2000cr to
+    gain 1 fame.
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

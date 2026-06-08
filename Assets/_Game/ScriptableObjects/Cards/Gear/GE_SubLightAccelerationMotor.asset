@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: During space combat, you may reroll 1 of your opponent's dice.
+    If you have Piloting or Tactics, you may reroll 2 of your opponent's dice instead.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

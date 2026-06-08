@@ -19,4 +19,5 @@ MonoBehaviour:
   DeckType: 0
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: 'Ship Goal - Action: If you have a mod, spend {7,000 to gain
+    1 fame and flip this sheet.'

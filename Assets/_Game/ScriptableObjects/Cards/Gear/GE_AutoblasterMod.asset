@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: During ship combat, turn up to 2 of your results to *. If you
+    have Tactics, you may instead turn 1 of your results to a *.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

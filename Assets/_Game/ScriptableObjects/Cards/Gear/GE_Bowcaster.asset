@@ -19,7 +19,7 @@ MonoBehaviour:
   DeckType: 2
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: During ground combat, you may rotate this card to gain +2.
   AffectedSkill: 0
   SkillBonus: 0
   IsSingleUse: 0

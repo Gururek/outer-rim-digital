@@ -19,7 +19,9 @@ MonoBehaviour:
   DeckType: 1
   BuyCost: 2000
   SellValue: 1000
-  EffectDescription: 
+  EffectDescription: Place this card in a cargo slot or mod slot. You can also have
+    1 cargo in this slot. When you are rolling a die to deliver ILLEGAL cargo, you
+    may turn result to a *.
   DeliveryPlanetId: 
   DeliveryReward: 2000
   IsIllegal: 1

@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 10000
   SellValue: 5000
-  EffectDescription: 
+  EffectDescription: Gain +3 Armor. When you gain the reward from a bounty, you may
+    reduce the bounty's credit reward to 70 to gain 1 additional fame.
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

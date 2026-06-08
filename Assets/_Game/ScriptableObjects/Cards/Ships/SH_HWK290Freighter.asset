@@ -19,7 +19,7 @@ MonoBehaviour:
   DeckType: 5
   BuyCost: 5000
   SellValue: 2500
-  EffectDescription: 
+  EffectDescription: Gain this ship's sheet and remove this card from the game.
   Hyperdrive: 3
   MaxHull: 4
   CargoSlots: 1

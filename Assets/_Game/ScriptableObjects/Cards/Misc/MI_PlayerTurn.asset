@@ -19,4 +19,9 @@ MonoBehaviour:
   DeckType: 0
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: '["PLANNING STEP - Choose 1: Move up to your ship''s", ''Gain
+    $2,000\nRecover all damage (required if you are defeated)'', ''ACTION STEP -
+    Perform any or all:\nDeliver cargo and bounties\nMarket action (if on a planet):\nMay
+    discard top card of a market deck and buy top card of a market deck and resolve
+    patrol movement'', ''ENCOUNTER STEP - Choose 1: Fight a patrol (required if you
+    have Reputation with a patrol in your space)\nResolve an encounter card'']'

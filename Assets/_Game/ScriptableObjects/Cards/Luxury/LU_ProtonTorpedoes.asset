@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 15000
   SellValue: 7500
-  EffectDescription: 
+  EffectDescription: Gain +1 Fame. When you win a combat against a patrol that has
+    a fame reward, gain 1 additional fame.
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

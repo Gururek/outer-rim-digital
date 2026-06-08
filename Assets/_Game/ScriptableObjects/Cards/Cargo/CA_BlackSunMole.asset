@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 1
   BuyCost: 4
   SellValue: 2
-  EffectDescription: 
+  EffectDescription: To buy, roll a die. On a *, buy this. Otherwise, resolve card
+    #93.
   DeliveryPlanetId: 
   DeliveryReward: 5000
   IsIllegal: 1

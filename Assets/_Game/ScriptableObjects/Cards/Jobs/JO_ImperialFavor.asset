@@ -19,7 +19,8 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: The Empire wants you to prevent an arms dealer from meeting
+    Rebel operatives on Ryloth.
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0

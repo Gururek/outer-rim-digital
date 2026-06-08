@@ -19,7 +19,9 @@ MonoBehaviour:
   DeckType: 4
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: When you gain fame, gain 1 additional fame. When you lose a
+    ship combat, discard this card. A player in your space can fight a ship combat
+    against you as their encounter.
   PremiumSellValue: 0
   IsRestrictedItem: 0
   FameOnPurchase: 0

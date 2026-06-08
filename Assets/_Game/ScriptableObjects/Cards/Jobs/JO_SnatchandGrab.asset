@@ -19,7 +19,7 @@ MonoBehaviour:
   DeckType: 3
   BuyCost: 0
   SellValue: 0
-  EffectDescription: 
+  EffectDescription: Choose another player in your space, and you resolve card #60.
   CreditAdvance: 0
   RewardCredits: 0
   RewardFame: 0
