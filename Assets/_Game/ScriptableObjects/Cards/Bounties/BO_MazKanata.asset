@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: BO_MazKanata
+  m_EditorClassIdentifier: Assembly-CSharp:OuterRim:BountyCardData
+  CardId: 1002
+  CardName: Maz Kanata
+  FlavorText: 
+  CardArt: {fileID: 0}
+  DeckType: 0
+  BuyCost: 0
+  SellValue: 0
+  EffectDescription: 
+  TargetName: Maz Kanata
+  IssuingFaction: 0
+  RewardCredits: 0
+  RewardFame: 0
+  ContactClass: 0
+  CombatValue: 5

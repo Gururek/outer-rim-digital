@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: SH_RogueclassPorax38Starfighter
+  m_EditorClassIdentifier: Assembly-CSharp:OuterRim:ShipCardData
+  CardId: 1106
+  CardName: Rogue-class Porax-38 Starfighter
+  FlavorText: 
+  CardArt: {fileID: 0}
+  DeckType: 5
+  BuyCost: 0
+  SellValue: 0
+  EffectDescription: 
+  Hyperdrive: 4
+  MaxHull: 3
+  CargoSlots: 1
+  CrewSlots: 1
+  ModSlots: 1
+  ShipCombatValue: 2
+  AttackDice: 2

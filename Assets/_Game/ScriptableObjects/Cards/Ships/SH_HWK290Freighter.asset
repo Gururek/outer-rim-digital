@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: SH_HWK290Freighter
+  m_EditorClassIdentifier: Assembly-CSharp:OuterRim:ShipCardData
+  CardId: 1104
+  CardName: HWK-290 Freighter
+  FlavorText: 
+  CardArt: {fileID: 0}
+  DeckType: 5
+  BuyCost: 5000
+  SellValue: 2500
+  EffectDescription: 
+  Hyperdrive: 3
+  MaxHull: 4
+  CargoSlots: 1
+  CrewSlots: 2
+  ModSlots: 1
+  ShipCombatValue: 2
+  AttackDice: 2
