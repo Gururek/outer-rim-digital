@@ -11,125 +11,121 @@ namespace OuterRim
         public List<MapNode> allNodes = new();
         public Dictionary<int, MapNode> nodeLookup = new();
 
-        // Outer Rim: Core Worlds fast travel pairs (node A ↔ node B)
+        // Core Worlds fast travel pairs
         private static readonly Dictionary<int, int> CoreWorldLinks = new()
         {
-            // Naboo (node 6) ↔ Takodama acts as Core World for now
-            // In full game, would be Naboo ↔ Coruscant
+            // Naboo (6) ↔ Takodama (8) as placeholder Core Worlds
         };
 
-        public override void OnNetworkSpawn()
+        private void Awake()
         {
             if (_instance == null)
             {
                 _instance = this;
                 DontDestroyOnLoad(gameObject);
-                foreach (var node in FindObjectsOfType<MapNode>())
+            }
+            else { Destroy(gameObject); return; }
+            DiscoverNodes();
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            if (_instance == null) _instance = this;
+            DiscoverNodes();
+        }
+
+        /// <summary>Find all MapNode components in the scene. Callable from editor.</summary>
+        public void DiscoverNodes()
+        {
+            nodeLookup.Clear();
+            allNodes.Clear();
+            foreach (var node in FindObjectsOfType<MapNode>())
+            {
+                if (!nodeLookup.ContainsKey(node.NodeId))
                 {
                     nodeLookup[node.NodeId] = node;
                     allNodes.Add(node);
                 }
             }
-            else { Destroy(gameObject); }
+            if (allNodes.Count > 0)
+                Debug.Log($"[MapManager] Discovered {allNodes.Count} nodes.");
         }
+
+        public MapNode GetNodeById(int id) => nodeLookup.TryGetValue(id, out var n) ? n : null;
 
         public List<int> GetReachableNodes(int fromNodeId, int maxDistance)
         {
             if (!nodeLookup.ContainsKey(fromNodeId)) return new List<int>();
             var result = new List<int>();
             var visited = new HashSet<int>();
-            var queue = new Queue<(int nodeId, int distance)>();
+            var queue = new Queue<(int, int)>();
             queue.Enqueue((fromNodeId, 0));
             visited.Add(fromNodeId);
 
             while (queue.Count > 0)
             {
-                var (currentId, dist) = queue.Dequeue();
-                result.Add(currentId);
+                var (cur, dist) = queue.Dequeue();
+                result.Add(cur);
                 if (dist >= maxDistance) continue;
 
-                if (nodeLookup.TryGetValue(currentId, out var node))
+                if (nodeLookup.TryGetValue(cur, out var node))
                 {
-                    foreach (var neighborId in node.ConnectedNodeIds)
-                    {
-                        if (!visited.Contains(neighborId))
-                        { visited.Add(neighborId); queue.Enqueue((neighborId, dist + 1)); }
-                    }
+                    foreach (var nid in node.ConnectedNodeIds)
+                        if (!visited.Contains(nid)) { visited.Add(nid); queue.Enqueue((nid, dist + 1)); }
 
-                    // Core Worlds fast travel: if at a Core World, can jump to its paired world for 0 movement
-                    if (CoreWorldLinks.TryGetValue(currentId, out int pairedId) && !visited.Contains(pairedId))
-                    { visited.Add(pairedId); queue.Enqueue((pairedId, dist)); }
+                    if (CoreWorldLinks.TryGetValue(cur, out int paired) && !visited.Contains(paired))
+                    { visited.Add(paired); queue.Enqueue((paired, dist)); }
                 }
             }
             return result;
         }
 
-        public List<int> FindPath(int fromNodeId, int toNodeId)
+        public List<int> FindPath(int from, int to)
         {
-            if (fromNodeId == toNodeId) return new List<int> { fromNodeId };
-            if (!nodeLookup.ContainsKey(fromNodeId) || !nodeLookup.ContainsKey(toNodeId))
-                return new List<int>();
+            if (from == to) return new List<int> { from };
+            if (!nodeLookup.ContainsKey(from) || !nodeLookup.ContainsKey(to)) return new List<int>();
 
             var parent = new Dictionary<int, int>();
             var visited = new HashSet<int>();
             var queue = new Queue<int>();
-            queue.Enqueue(fromNodeId);
-            visited.Add(fromNodeId);
+            queue.Enqueue(from);
+            visited.Add(from);
 
             while (queue.Count > 0)
             {
-                int currentId = queue.Dequeue();
-                if (!nodeLookup.TryGetValue(currentId, out var currentNode)) continue;
+                int cur = queue.Dequeue();
+                if (!nodeLookup.TryGetValue(cur, out var cn)) continue;
 
-                var neighbors = new List<int>(currentNode.ConnectedNodeIds);
-                // Add Core World jump
-                if (CoreWorldLinks.TryGetValue(currentId, out int paired))
-                    neighbors.Add(paired);
+                var neighbors = new List<int>(cn.ConnectedNodeIds);
+                if (CoreWorldLinks.TryGetValue(cur, out int p)) neighbors.Add(p);
 
-                foreach (var neighborId in neighbors)
+                foreach (var nid in neighbors)
                 {
-                    if (visited.Contains(neighborId)) continue;
-                    visited.Add(neighborId);
-                    parent[neighborId] = currentId;
-                    if (neighborId == toNodeId)
+                    if (visited.Contains(nid)) continue;
+                    visited.Add(nid);
+                    parent[nid] = cur;
+                    if (nid == to)
                     {
                         var path = new List<int>();
-                        int step = toNodeId;
-                        while (step != fromNodeId)
-                        { path.Add(step); step = parent[step]; }
-                        path.Add(fromNodeId);
-                        path.Reverse();
+                        int s = to;
+                        while (s != from) { path.Add(s); s = parent[s]; }
+                        path.Add(from); path.Reverse();
                         return path;
                     }
-                    queue.Enqueue(neighborId);
+                    queue.Enqueue(nid);
                 }
             }
             return new List<int>();
         }
 
-        public int GetPathCost(int fromNodeId, int toNodeId)
-        {
-            var path = FindPath(fromNodeId, toNodeId);
-            return path.Count > 0 ? path.Count - 1 : -1;
-        }
+        public int GetPathCost(int from, int to) { var p = FindPath(from, to); return p.Count > 0 ? p.Count - 1 : -1; }
 
-        public bool AreConnected(int nodeA, int nodeB)
-        {
-            if (nodeLookup.TryGetValue(nodeA, out var node) && node.ConnectedNodeIds.Contains(nodeB))
-                return true;
-            return CoreWorldLinks.TryGetValue(nodeA, out int paired) && paired == nodeB;
-        }
-
-        /// <summary>Get all players at a given node (for trade detection).</summary>
         public List<PlayerState> GetPlayersAtNode(int nodeId)
         {
-            var result = new List<PlayerState>();
+            var r = new List<PlayerState>();
             foreach (var ps in FindObjectsOfType<PlayerState>())
-            {
-                if (ps.CurrentNodeId.Value == nodeId)
-                    result.Add(ps);
-            }
-            return result;
+                if (ps.CurrentNodeId.Value == nodeId) r.Add(ps);
+            return r;
         }
     }
 }

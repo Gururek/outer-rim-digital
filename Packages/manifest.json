@@ -6,6 +6,15 @@
     "com.unity.transport": "2.3.0",
     "com.unity.services.authentication": "3.3.0",
     "com.unity.test-framework": "1.4.4",
-    "com.unity.render-pipelines.universal": "17.0.3"
-  }
+    "com.unity.render-pipelines.universal": "17.0.3",
+    "com.ivanmurzak.unity.mcp": "0.79.0",
+    "extensions.unity.playerprefsex": "2.1.5"
+  },
+  "scopedRegistries": [
+    {
+      "name": "package.openupm.com",
+      "url": "https://package.openupm.com",
+      "scopes": ["com.ivanmurzak", "extensions.unity"]
+    }
+  ]
 }
