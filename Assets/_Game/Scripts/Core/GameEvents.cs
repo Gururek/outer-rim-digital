@@ -1,48 +1,21 @@
-// GameEvents.cs — ScriptableObject-based event bus
-using UnityEngine;
-using UnityEngine.Events;
-
+// GameEvents.cs — V2: event payloads
 namespace OuterRim
 {
-    [CreateAssetMenu(menuName = "Outer Rim/Events/Game Event")]
-    public class GameEvent : ScriptableObject
+    public struct CombatResult
     {
-        private readonly UnityEvent onRaise = new UnityEvent();
-
-        public void Raise()
-        {
-            onRaise.Invoke();
-        }
-
-        public void AddListener(UnityAction action)
-        {
-            onRaise.AddListener(action);
-        }
-
-        public void RemoveListener(UnityAction action)
-        {
-            onRaise.RemoveListener(action);
-        }
+        public bool PlayerWon;
+        public int DamageDealt;
+        public int DamageTaken;
+        public int CreditsGained;
+        public int FameGained;
     }
 
-    [CreateAssetMenu(menuName = "Outer Rim/Events/Phase Change Event")]
-    public class PhaseChangeEvent : ScriptableObject
+    public struct SkillTestResult
     {
-        private readonly UnityEvent<GamePhase> onRaise = new UnityEvent<GamePhase>();
-
-        public void Raise(GamePhase phase)
-        {
-            onRaise.Invoke(phase);
-        }
-
-        public void AddListener(UnityAction<GamePhase> action)
-        {
-            onRaise.AddListener(action);
-        }
-
-        public void RemoveListener(UnityAction<GamePhase> action)
-        {
-            onRaise.RemoveListener(action);
-        }
+        public bool Passed;
+        public int Hits;
+        public int Crits;
+        public SkillType Skill;
+        public int Difficulty;
     }
 }

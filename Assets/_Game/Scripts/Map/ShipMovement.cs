@@ -55,7 +55,7 @@ namespace OuterRim
             if (nodeLookup == null || MapManager.Instance == null) return false;
 
             int startId = player.CurrentNodeId.Value;
-            int speed = player.Speed.Value;
+            int speed = player.Hyperdrive.Value;
 
             var path = MapManager.Instance.FindPath(startId, destinationNodeId);
             if (path == null || path.Count == 0) return false;
@@ -141,7 +141,7 @@ namespace OuterRim
             if (nodeLookup == null || MapManager.Instance == null) return;
 
             int startId = player.CurrentNodeId.Value;
-            int speed = player.Speed.Value;
+            int speed = player.Hyperdrive.Value;
 
             var reachableIds = MapManager.Instance.GetReachableNodes(startId, speed);
 

@@ -1,3 +1,4 @@
+// MapNode.cs — V2
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -8,28 +9,14 @@ namespace OuterRim
         public int NodeId;
         public MapNodeType Type;
         public string NodeName;
-        public List<int> ConnectedNodeIds = new List<int>();
-        public int? PlanetDeckId;
+        public List<int> ConnectedNodeIds = new();
         public FactionType PlanetFactionType;
-
-        public bool IsOccupied
-        {
-            get
-            {
-                foreach (var playerState in FindObjectsOfType<PlayerState>())
-                {
-                    if (playerState.CurrentNodeId.Value == NodeId)
-                        return true;
-                }
-                return false;
-            }
-        }
+        public int? PlanetDeckId;
 
         public bool IsPlanet => Type == MapNodeType.Planet;
+        public bool IsMaelstrom => Type == MapNodeType.Maelstrom;
 
-        public List<int> GetReachableNodes(int maxDistance)
-        {
-            return MapManager.Instance.GetReachableNodes(NodeId, maxDistance);
-        }
+        public List<int> GetReachableNodes(int maxDistance) =>
+            MapManager.Instance.GetReachableNodes(NodeId, maxDistance);
     }
 }

@@ -1,4 +1,4 @@
-// PlayerState.cs — Per-player networked state (Outer Rim rules)
+// PlayerState.cs — V2 per Outer Rim rulebooks
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -7,17 +7,17 @@ namespace OuterRim
 {
     public class PlayerState : NetworkBehaviour
     {
-        // ─── Core Stats ──────────────────────────────────────────────────
+        // ─── Core Stats ──────────────────────────────────────────────────────
         public NetworkVariable<int> Fame = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         public NetworkVariable<int> Credits = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         public NetworkVariable<int> Health = new(5, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         public NetworkVariable<int> MaxHealth = new(5);
         public NetworkVariable<int> ShipHealth = new(3, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         public NetworkVariable<int> MaxShipHealth = new(3);
-        public NetworkVariable<int> Speed = new(2, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        public NetworkVariable<int> Hyperdrive = new(2, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         public NetworkVariable<int> AttackDice = new(2, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        // ─── Ship Slots (per Outer Rim rules) ────────────────────────────
+        // ─── Ship Slots ──────────────────────────────────────────────────────
         public NetworkVariable<int> CargoSlots = new(2);
         public NetworkVariable<int> CargoUsed = new(0);
         public NetworkVariable<int> CrewSlots = new(1);
@@ -27,156 +27,133 @@ namespace OuterRim
         public NetworkVariable<int> ModSlots = new(1);
         public NetworkVariable<int> ModUsed = new(0);
 
-        // ─── Reputation (per faction) ────────────────────────────────────
-        public NetworkVariable<int> SyndicateRep = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-        public NetworkVariable<int> AuthorityRep = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-        public NetworkVariable<int> RebelsRep = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-        public NetworkVariable<int> HuttsRep = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        // ─── V2 Reputation: 3 discrete states per faction ────────────────────
+        public NetworkVariable<ReputationStatus> HuttRep = new(ReputationStatus.Neutral, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        public NetworkVariable<ReputationStatus> SyndicateRep = new(ReputationStatus.Neutral, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        public NetworkVariable<ReputationStatus> ImperialRep = new(ReputationStatus.Neutral, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        public NetworkVariable<ReputationStatus> RebelRep = new(ReputationStatus.Neutral, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        // ─── Map Location ────────────────────────────────────────────────
+        // ─── Map ─────────────────────────────────────────────────────────────
         public NetworkVariable<int> CurrentNodeId = new(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        // ─── Skills ──────────────────────────────────────────────────────
-        public NetworkVariable<int> CombatSkill = new(2);
+        // ─── V2 Skills (7 per rulebook) ──────────────────────────────────────
+        public NetworkVariable<int> InfluenceSkill = new(1);
+        public NetworkVariable<int> StrengthSkill = new(1);
+        public NetworkVariable<int> KnowledgeSkill = new(1);
+        public NetworkVariable<int> TacticsSkill = new(1);
         public NetworkVariable<int> PilotingSkill = new(1);
-        public NetworkVariable<int> CunningSkill = new(1);
+        public NetworkVariable<int> StealthSkill = new(1);
         public NetworkVariable<int> TechSkill = new(1);
 
-        // ─── Inventory ───────────────────────────────────────────────────
-        public NetworkList<CardInstanceData> Inventory = new();
+        // ─── Combat Values ───────────────────────────────────────────────────
+        public NetworkVariable<int> GroundCombatValue = new(2);
+        public NetworkVariable<int> ShipCombatValue = new(2);
 
-        // ─── Defeated State (per Outer Rim rules) ────────────────────────
+        // ─── Defeated State ──────────────────────────────────────────────────
         public NetworkVariable<bool> IsDefeated = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        // ─── Identity ────────────────────────────────────────────────────
-        public NetworkVariable<Unity.Collections.FixedString32Bytes> PlayerName = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        // ─── Identity ────────────────────────────────────────────────────────
+        public NetworkVariable<Unity.Collections.FixedString32Bytes> PlayerName = new(default);
         public NetworkVariable<int> CharacterId = new(-1);
 
-        // ─── Client-side ─────────────────────────────────────────────────
+        // ─── Client ──────────────────────────────────────────────────────────
         public bool IsMyTurn { get; private set; }
-        public bool HasSlotFor(MarketDeckType cardType)
-        {
-            return cardType switch
-            {
-                MarketDeckType.Cargo  => CargoUsed.Value < CargoSlots.Value,
-                MarketDeckType.Gear   => GearUsed.Value < GearSlots.Value,
-                MarketDeckType.Mods   => ModUsed.Value < ModSlots.Value,
-                MarketDeckType.Jobs   => true, // jobs don't use ship slots
-                MarketDeckType.Bounties => true,
-                MarketDeckType.Luxury  => true,
-                _ => false
-            };
-        }
 
-        // ─── Reputation Helpers ──────────────────────────────────────────
-        public int GetReputation(FactionType faction) => faction switch
+        // ─── Helpers ─────────────────────────────────────────────────────────
+        public ReputationStatus GetReputation(FactionType f) => f switch
         {
+            FactionType.Hutt      => HuttRep.Value,
             FactionType.Syndicate => SyndicateRep.Value,
-            FactionType.Authority => AuthorityRep.Value,
-            FactionType.Rebels    => RebelsRep.Value,
-            FactionType.Hutts     => HuttsRep.Value,
-            _ => 0
+            FactionType.Imperial  => ImperialRep.Value,
+            FactionType.Rebel     => RebelRep.Value,
+            _ => ReputationStatus.Neutral
         };
 
-        public void ModifyReputation(FactionType faction, int delta)
+        public void SetReputation(FactionType f, ReputationStatus status)
         {
             if (!IsServer) return;
-            switch (faction)
+            switch (f)
             {
-                case FactionType.Syndicate: SyndicateRep.Value = Mathf.Clamp(SyndicateRep.Value + delta, -4, 4); break;
-                case FactionType.Authority: AuthorityRep.Value = Mathf.Clamp(AuthorityRep.Value + delta, -4, 4); break;
-                case FactionType.Rebels:    RebelsRep.Value = Mathf.Clamp(RebelsRep.Value + delta, -4, 4); break;
-                case FactionType.Hutts:     HuttsRep.Value = Mathf.Clamp(HuttsRep.Value + delta, -4, 4); break;
+                case FactionType.Hutt:      HuttRep.Value = status; break;
+                case FactionType.Syndicate: SyndicateRep.Value = status; break;
+                case FactionType.Imperial:  ImperialRep.Value = status; break;
+                case FactionType.Rebel:     RebelRep.Value = status; break;
             }
         }
 
-        public ReputationStatus GetReputationStatus(FactionType faction)
+        public int GetSkillValue(SkillType s) => s switch
         {
-            int rep = GetReputation(faction);
-            if (rep > 0) return ReputationStatus.Positive;
-            if (rep < 0) return ReputationStatus.Negative;
-            return ReputationStatus.Neutral;
-        }
+            SkillType.Influence => InfluenceSkill.Value,
+            SkillType.Strength  => StrengthSkill.Value,
+            SkillType.Knowledge => KnowledgeSkill.Value,
+            SkillType.Tactics   => TacticsSkill.Value,
+            SkillType.Piloting  => PilotingSkill.Value,
+            SkillType.Stealth   => StealthSkill.Value,
+            SkillType.Tech      => TechSkill.Value,
+            _ => 1
+        };
 
-        // ─── Resources ───────────────────────────────────────────────────
+        public int GetEffectiveHyperdrive() => Hyperdrive.Value; // + mod bonuses later
+
+        // ─── Resources ───────────────────────────────────────────────────────
         public bool SpendCredits(int amount)
         {
             if (!IsServer || Credits.Value < amount || amount < 0) return false;
             Credits.Value -= amount;
             return true;
         }
+        public void AddCredits(int amount) { if (IsServer && amount > 0) Credits.Value += amount; }
+        public void AddFame(int amount) { if (IsServer && amount > 0) Fame.Value += amount; }
+        public void SetStartingCredits(int amount) { if (IsServer) Credits.Value = amount; }
 
-        public void AddCredits(int amount)
-        {
-            if (!IsServer || amount <= 0) return;
-            Credits.Value += amount;
-        }
-
-        public void AddFame(int amount)
-        {
-            if (!IsServer || amount <= 0) return;
-            Fame.Value += amount;
-        }
-
-        // ─── Defeated State (Outer Rim rules) ────────────────────────────
-        /// <summary>
-        /// Apply defeated penalties: lose half credits, discard a crew member,
-        /// lose all damage, respawn at nearest planet or starting location.
-        /// After being defeated, the player must choose "Heal" during their next Planning Step.
-        /// </summary>
+        // ─── Defeated ────────────────────────────────────────────────────────
         public void ApplyDefeat()
         {
             if (!IsServer) return;
-            Credits.Value = Credits.Value / 2;
-            // Lose a crew member if any (handled by inventory system later)
+            Credits.Value = Mathf.Max(0, Credits.Value - 3000); // V2: flat 3000 penalty
             Health.Value = MaxHealth.Value;
             ShipHealth.Value = MaxShipHealth.Value;
             IsDefeated.Value = true;
-            Debug.Log($"[PlayerState] Player {OwnerClientId} DEFEATED! Credits halved to {Credits.Value}, respawning.");
         }
 
-        public void RecoverFromDefeat()
+        public void RecoverAllDamage()
         {
             if (!IsServer) return;
-            IsDefeated.Value = false;
+            Health.Value = MaxHealth.Value;
+            ShipHealth.Value = MaxShipHealth.Value;
         }
 
-        // ─── Damage ──────────────────────────────────────────────────────
+        public void StandUp() { if (IsServer) IsDefeated.Value = false; }
+
+        public void MoveToNode(int nodeId) { if (IsServer) CurrentNodeId.Value = nodeId; }
+
+        // ─── Damage ──────────────────────────────────────────────────────────
         public void TakeHullDamage(int amount)
         {
             if (!IsServer || amount <= 0) return;
             ShipHealth.Value = Mathf.Max(0, ShipHealth.Value - amount);
             if (ShipHealth.Value <= 0)
             {
-                // Ship destroyed — character takes damage (Outer Rim: ship destroyed = 1 damage to character)
                 Health.Value = Mathf.Max(0, Health.Value - 1);
                 ShipHealth.Value = MaxShipHealth.Value;
-                Debug.Log($"[PlayerState] Player {OwnerClientId} ship destroyed! Health: {Health.Value}/{MaxHealth.Value}");
-
-                if (Health.Value <= 0)
-                    ApplyDefeat();
+                if (Health.Value <= 0) ApplyDefeat();
             }
         }
 
-        // ─── Skills ──────────────────────────────────────────────────────
-        public int GetSkillValue(SkillType skill) => skill switch
+        public void TakeGroundDamage(int amount)
         {
-            SkillType.Combat   => CombatSkill.Value,
-            SkillType.Piloting => PilotingSkill.Value,
-            SkillType.Cunning  => CunningSkill.Value,
-            SkillType.Tech     => TechSkill.Value,
-            _ => 1
-        };
+            if (!IsServer || amount <= 0) return;
+            Health.Value = Mathf.Max(0, Health.Value - amount);
+            if (Health.Value <= 0) ApplyDefeat();
+        }
 
         public void SetTurnActive(bool active) => IsMyTurn = active;
 
         public override void OnNetworkSpawn()
         {
-            if (IsOwner)
-                SetPlayerNameServerRpc($"Player {OwnerClientId}");
+            if (IsOwner) SetPlayerNameServerRpc($"Player {OwnerClientId}");
         }
 
-        [ServerRpc]
-        private void SetPlayerNameServerRpc(string name) => PlayerName.Value = name;
+        [ServerRpc] private void SetPlayerNameServerRpc(string n) => PlayerName.Value = n;
     }
 }

@@ -28,7 +28,7 @@ namespace OuterRim
             // Validate reachability
             if (MapManager.Instance != null)
             {
-                var reachable = MapManager.Instance.GetReachableNodes(ap.CurrentNodeId.Value, ap.Speed.Value);
+                var reachable = MapManager.Instance.GetReachableNodes(ap.CurrentNodeId.Value, ap.Hyperdrive.Value);
                 if (!reachable.Contains(nodeId))
                 {
                     Debug.LogWarning($"[NodeClickHandler] Node {nodeId} not reachable from {ap.CurrentNodeId.Value}");
@@ -37,7 +37,7 @@ namespace OuterRim
             }
 
             Debug.Log($"[NodeClickHandler] Clicking node {nodeId} to move.");
-            gm.ConfirmShipMovementServerRpc(nodeId);
+            gm.ConfirmMoveServerRpc(nodeId);
         }
 
         private void OnMouseEnter()

@@ -1,8 +1,7 @@
-// CombatResolver.cs — Handles all contested dice rolls (player vs patrol, skill checks).
-// Runs exclusively on the server; results broadcast via ClientRpc.
+// CombatResolver.cs — V2 per Outer Rim rulebooks
+// Both sides roll. Both take the damage their opponent rolled.
+// Crit = 2 damage, Hit = 1 damage. No margin of victory.
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -14,100 +13,68 @@ namespace OuterRim
 
         [SerializeField] private DiceFaceDistribution standardDie;
 
-        // ─── Structs ────────────────────────────────────────────────────────
-
-        public struct CombatOutcome
-        {
-            public bool           PlayerWon;
-            public int            DamageToEnemy;
-            public int            DamageToPlayer;
-            public DiceRollResult PlayerRoll;
-            public DiceRollResult EnemyRoll;
-        }
-
         private void Awake()
         {
             if (Instance == null) Instance = this;
             else Destroy(gameObject);
         }
 
-        // ─── Ship Combat ────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Full combat sequence: rolls dice for both sides, applies damage,
-        /// broadcasts the visual result to all clients.
-        /// Crits deal +1 bonus damage on top of the margin of victory.
-        /// </summary>
-        public IEnumerator ResolveCombat(PlayerState player, PatrolEnemy enemy)
+        /// <summary>V2 combat: both sides roll, both take opponent's damage.</summary>
+        public IEnumerator ResolveShipCombat(PlayerState player, int patrolDice, FactionType faction)
         {
             if (!IsServer) yield break;
+            int playerDiceCount = player.ShipCombatValue.Value;
 
-            int playerDice = player.AttackDice.Value;
-            int enemyDice  = enemy.AttackDice;
+            var playerRoll = DiceRoller.Roll(playerDiceCount, standardDie);
+            var patrolRoll = DiceRoller.Roll(patrolDice, standardDie);
 
-            var playerRoll = DiceRoller.Roll(playerDice, standardDie);
-            var enemyRoll  = DiceRoller.Roll(enemyDice,  standardDie);
+            int damageToPatrol = playerRoll.Damage;  // V2: Hit=1, Crit=2
+            int damageToPlayer = patrolRoll.Damage;
 
-            bool playerWon = playerRoll.Hits > enemyRoll.Hits;
-            int  margin    = Mathf.Abs(playerRoll.Hits - enemyRoll.Hits);
+            player.TakeHullDamage(damageToPlayer);
 
-            var outcome = new CombatOutcome
+            bool playerWon = damageToPatrol >= 3; // simplified: need 3+ damage to defeat patrol
+            int credits = playerWon ? Random.Range(1000, 3000) : 0;
+            int fame = playerWon ? (faction == FactionType.Imperial ? 2 : 1) : 0;
+
+            if (playerWon)
             {
-                PlayerWon      = playerWon,
-                DamageToEnemy  = playerWon ? margin + playerRoll.Crits : 0,
-                DamageToPlayer = playerWon ? 0 : margin + enemyRoll.Crits,
-                PlayerRoll     = playerRoll,
-                EnemyRoll      = enemyRoll
-            };
-
-            // Apply damage.
-            if (outcome.DamageToPlayer > 0)
-                player.TakeHullDamage(outcome.DamageToPlayer);
-
-            if (outcome.DamageToEnemy >= enemy.HullPoints)
-            {
-                player.AddCredits(enemy.RewardCredits);
-                player.AddFame(enemy.RewardFame);
-                player.ModifyReputation(enemy.Faction, enemy.ReputationReward);
+                player.AddCredits(credits);
+                player.AddFame(fame);
+                player.SetReputation(faction, ReputationStatus.Neutral); // lose negative rep
             }
 
-            // Broadcast roll results to all clients for animation.
-            BroadcastCombatResultClientRpc(
-                player.OwnerClientId,
-                playerRoll.ToIntArray(),
-                enemyRoll.ToIntArray(),
-                outcome.PlayerWon,
-                outcome.DamageToPlayer,
-                outcome.DamageToEnemy);
+            BroadcastResultClientRpc(player.OwnerClientId, playerRoll.ToIntArray(), patrolRoll.ToIntArray(),
+                playerWon, damageToPlayer, credits, fame);
 
-            yield return new WaitForSeconds(2.5f); // Wait for dice animation
+            yield return new WaitForSeconds(2.5f);
             GameManager.Instance?.NotifyEncounterComplete();
         }
 
         [ClientRpc]
-        private void BroadcastCombatResultClientRpc(
-            ulong  playerClientId,
-            int[]  playerFaces,
-            int[]  enemyFaces,
-            bool   playerWon,
-            int    damageToPlayer,
-            int    damageToEnemy)
+        private void BroadcastResultClientRpc(ulong cid, int[] pFaces, int[] eFaces, bool won, int dmg, int cr, int fame)
         {
-            Debug.Log($"[CombatResolver] Combat result — PlayerWon:{playerWon} DmgPlayer:{damageToPlayer} DmgEnemy:{damageToEnemy}");
-            // Trigger dice roll animation on all clients' UI — Phase 4.
+            Debug.Log($"[Combat] Player {cid}: won={won}, dmg={dmg}, cr={cr}, fame={fame}");
         }
 
-        // ─── Skill Check ────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Resolves a non-combat skill check (e.g., Encounter card).
-        /// Returns true if player's hits meet or exceed the difficulty threshold.
-        /// </summary>
-        public bool ResolveSkillCheck(PlayerState player, SkillType skill, int difficulty, out DiceRollResult rollResult)
+        /// <summary>V2 skill test: always roll 2 dice. Skill level determines pass threshold.</summary>
+        public DiceRollResult RollSkillTest(int skillLevel)
         {
-            int numDice = player.GetSkillValue(skill);
-            rollResult  = DiceRoller.Roll(numDice, standardDie);
-            return rollResult.Hits >= difficulty;
+            return DiceRoller.Roll(2, standardDie);
+        }
+
+        /// <summary>Check if a skill test passes based on V2 thresholds.</summary>
+        public static bool SkillTestPasses(DiceRollResult roll, int skillLevel)
+        {
+            // Unskilled (0): need at least 1 Crit
+            // Skilled (1): need at least 1 Hit OR Crit
+            // Highly Skilled (2+): need at least 1 Focus, Hit, OR Crit
+            return skillLevel switch
+            {
+                0 => roll.Crits >= 1,
+                1 => roll.Hits >= 1 || roll.Crits >= 1,
+                _ => roll.Focuses >= 1 || roll.Hits >= 1 || roll.Crits >= 1
+            };
         }
     }
 }
