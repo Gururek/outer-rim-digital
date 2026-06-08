@@ -8,6 +8,8 @@ namespace OuterRim
     {
         private string joinCodeInput = "";
         private string nodeIdInput = "";
+        private string tradeTargetInput = "";
+        private string tradeAmountInput = "1000";
         private string statusMessage = "";
 
         private void OnGUI()
@@ -29,19 +31,13 @@ namespace OuterRim
                     GUILayout.Space(10);
                     if (GUILayout.Button("START HOST"))
                     {
-                        var bootstrapper = FindObjectOfType<NetworkBootstrapper>();
-                        if (bootstrapper != null) bootstrapper.StartHost();
-                        else statusMessage = "No NetworkBootstrapper!";
+                        var b = FindObjectOfType<NetworkBootstrapper>();
+                        if (b != null) b.StartHost(); else statusMessage = "No NetworkBootstrapper!";
                     }
-
                     GUILayout.Label("Join Code:");
                     joinCodeInput = GUILayout.TextField(joinCodeInput, GUILayout.Width(200));
                     if (GUILayout.Button("JOIN GAME") && !string.IsNullOrEmpty(joinCodeInput))
-                    {
-                        var bootstrapper = FindObjectOfType<NetworkBootstrapper>();
-                        if (bootstrapper != null) bootstrapper.StartClient(joinCodeInput);
-                    }
-
+                        FindObjectOfType<NetworkBootstrapper>()?.StartClient(joinCodeInput);
                     if (!string.IsNullOrEmpty(statusMessage)) GUILayout.Label(statusMessage);
                 }
                 else
@@ -58,9 +54,8 @@ namespace OuterRim
                     if (ap != null)
                     {
                         GUILayout.Label($"Node: {ap.CurrentNodeId.Value} | Speed: {ap.Speed.Value} | Fame: {ap.Fame.Value}/{10}");
-                        GUILayout.Label($"Credits: {ap.Credits.Value} | Health: {ap.Health.Value}/{ap.MaxHealth.Value} | Ship: {ap.ShipHealth.Value}/{ap.MaxShipHealth.Value}");
-                        if (ap.IsDefeated.Value)
-                            GUILayout.Label("*** DEFEATED — must Heal next turn ***");
+                        GUILayout.Label($"Cr: {ap.Credits.Value} | HP: {ap.Health.Value}/{ap.MaxHealth.Value} | Ship: {ap.ShipHealth.Value}/{ap.MaxShipHealth.Value}");
+                        if (ap.IsDefeated.Value) GUILayout.Label("*** DEFEATED ***");
                     }
 
                     GUILayout.Space(10);
@@ -68,17 +63,12 @@ namespace OuterRim
                     switch (gm.CurrentPhase)
                     {
                         case GamePhase.PlanningPhase:
-                            if (isMyTurn)
+                            if (isMyTurn && ap != null && !ap.IsDefeated.Value)
                             {
                                 GUILayout.Label("--- PLANNING (choose 1) ---");
-                                if (ap != null && ap.IsDefeated.Value)
-                                    GUILayout.Label("You are defeated — Heal is chosen automatically.");
-                                else
-                                {
-                                    if (GUILayout.Button("MOVE SHIP")) gm.SubmitPlanningChoiceServerRpc(PlanningChoice.MoveShip);
-                                    if (GUILayout.Button("HEAL (full repair)")) gm.SubmitPlanningChoiceServerRpc(PlanningChoice.HealDamage);
-                                    if (GUILayout.Button("COLLECT CREDITS (+2000)")) gm.SubmitPlanningChoiceServerRpc(PlanningChoice.CollectCredits);
-                                }
+                                if (GUILayout.Button("MOVE SHIP")) gm.SubmitPlanningChoiceServerRpc(PlanningChoice.MoveShip);
+                                if (GUILayout.Button("HEAL (full repair)")) gm.SubmitPlanningChoiceServerRpc(PlanningChoice.HealDamage);
+                                if (GUILayout.Button("COLLECT CREDITS (+2000)")) gm.SubmitPlanningChoiceServerRpc(PlanningChoice.CollectCredits);
                             }
                             break;
 
@@ -88,38 +78,55 @@ namespace OuterRim
                                 GUILayout.Label("--- ACTION (any/all) ---");
 
                                 // Movement
-                                GUILayout.Label("Move to node ID:");
-                                nodeIdInput = GUILayout.TextField(nodeIdInput, GUILayout.Width(80));
-                                if (GUILayout.Button("MOVE TO NODE") && int.TryParse(nodeIdInput, out int destId))
-                                { gm.ConfirmShipMovementServerRpc(destId); nodeIdInput = ""; }
+                                GUILayout.BeginHorizontal();
+                                nodeIdInput = GUILayout.TextField(nodeIdInput, GUILayout.Width(60));
+                                if (GUILayout.Button("MOVE", GUILayout.Width(80)))
+                                { if (int.TryParse(nodeIdInput, out int d)) { gm.ConfirmShipMovementServerRpc(d); nodeIdInput = ""; } }
+                                GUILayout.EndHorizontal();
 
                                 if (MapManager.Instance != null)
                                 {
-                                    var reachable = MapManager.Instance.GetReachableNodes(ap.CurrentNodeId.Value, ap.Speed.Value);
-                                    GUILayout.Label($"Reachable: [{string.Join(", ", reachable)}]");
+                                    var r = MapManager.Instance.GetReachableNodes(ap.CurrentNodeId.Value, ap.Speed.Value);
+                                    GUILayout.Label($"Reachable: [{string.Join(", ", r)}]");
                                 }
 
                                 GUILayout.Space(5);
 
-                                // Market actions (on planets)
-                                if (GUILayout.Button("BUY GEAR (if on planet)")) gm.BuyCardServerRpc(MarketDeckType.Gear, 0);
-                                if (GUILayout.Button("BUY MOD (if on planet)")) gm.BuyCardServerRpc(MarketDeckType.Mods, 0);
+                                // Market
+                                GUILayout.BeginHorizontal();
+                                if (GUILayout.Button("Buy Gear")) gm.BuyCardServerRpc(MarketDeckType.Gear, 0);
+                                if (GUILayout.Button("Buy Mod")) gm.BuyCardServerRpc(MarketDeckType.Mods, 0);
+                                if (GUILayout.Button("Buy Cargo")) gm.BuyCardServerRpc(MarketDeckType.Cargo, 0);
+                                GUILayout.EndHorizontal();
 
                                 GUILayout.Space(5);
 
-                                // Deliver / Complete
-                                if (GUILayout.Button("DELIVER CARGO (+2000cr, +1 fame)")) gm.DeliverCargoServerRpc(0);
-                                if (GUILayout.Button("COMPLETE BOUNTY (+5000cr, +2 fame)")) gm.CompleteBountyServerRpc(0);
+                                // Deliver / Bounty
+                                GUILayout.BeginHorizontal();
+                                if (GUILayout.Button("Deliver (+1f)")) gm.DeliverCargoServerRpc(0);
+                                if (GUILayout.Button("Bounty (+2f)")) gm.CompleteBountyServerRpc(0);
+                                GUILayout.EndHorizontal();
 
                                 GUILayout.Space(5);
 
+                                // Trade (Outer Rim: trade with player in same space)
+                                GUILayout.Label("--- TRADE ---");
+                                GUILayout.BeginHorizontal();
+                                GUILayout.Label("Target ID:", GUILayout.Width(60));
+                                tradeTargetInput = GUILayout.TextField(tradeTargetInput, GUILayout.Width(40));
+                                GUILayout.Label("Cr:", GUILayout.Width(25));
+                                tradeAmountInput = GUILayout.TextField(tradeAmountInput, GUILayout.Width(60));
+                                GUILayout.EndHorizontal();
+                                if (GUILayout.Button("SEND CREDITS") && ulong.TryParse(tradeTargetInput, out ulong tid) && int.TryParse(tradeAmountInput, out int amt))
+                                    gm.TradeCreditsServerRpc(tid, amt);
+
+                                GUILayout.Space(5);
                                 if (GUILayout.Button("END ACTION → Encounter")) gm.EndActionPhaseServerRpc();
                             }
                             break;
 
                         case GamePhase.EncounterPhase:
-                            GUILayout.Label("--- ENCOUNTER ---");
-                            GUILayout.Label("Resolving encounter... (auto)");
+                            GUILayout.Label("--- ENCOUNTER (auto) ---");
                             break;
 
                         case GamePhase.CheckingWinCondition:

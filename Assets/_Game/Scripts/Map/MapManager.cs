@@ -8,9 +8,15 @@ namespace OuterRim
     {
         private static MapManager _instance;
         public static MapManager Instance => _instance;
+        public List<MapNode> allNodes = new();
+        public Dictionary<int, MapNode> nodeLookup = new();
 
-        public List<MapNode> allNodes = new List<MapNode>();
-        public Dictionary<int, MapNode> nodeLookup = new Dictionary<int, MapNode>();
+        // Outer Rim: Core Worlds fast travel pairs (node A ↔ node B)
+        private static readonly Dictionary<int, int> CoreWorldLinks = new()
+        {
+            // Naboo (node 6) ↔ Takodama acts as Core World for now
+            // In full game, would be Naboo ↔ Coruscant
+        };
 
         public override void OnNetworkSpawn()
         {
@@ -18,25 +24,18 @@ namespace OuterRim
             {
                 _instance = this;
                 DontDestroyOnLoad(gameObject);
-
-                // Populate node lookup from scene
                 foreach (var node in FindObjectsOfType<MapNode>())
                 {
                     nodeLookup[node.NodeId] = node;
                     allNodes.Add(node);
                 }
             }
-            else
-            {
-                Destroy(gameObject);
-            }
+            else { Destroy(gameObject); }
         }
 
-        /// <summary>Level-order BFS: returns all nodes within maxDistance hops (inclusive).</summary>
         public List<int> GetReachableNodes(int fromNodeId, int maxDistance)
         {
             if (!nodeLookup.ContainsKey(fromNodeId)) return new List<int>();
-
             var result = new List<int>();
             var visited = new HashSet<int>();
             var queue = new Queue<(int nodeId, int distance)>();
@@ -47,7 +46,6 @@ namespace OuterRim
             {
                 var (currentId, dist) = queue.Dequeue();
                 result.Add(currentId);
-
                 if (dist >= maxDistance) continue;
 
                 if (nodeLookup.TryGetValue(currentId, out var node))
@@ -55,17 +53,17 @@ namespace OuterRim
                     foreach (var neighborId in node.ConnectedNodeIds)
                     {
                         if (!visited.Contains(neighborId))
-                        {
-                            visited.Add(neighborId);
-                            queue.Enqueue((neighborId, dist + 1));
-                        }
+                        { visited.Add(neighborId); queue.Enqueue((neighborId, dist + 1)); }
                     }
+
+                    // Core Worlds fast travel: if at a Core World, can jump to its paired world for 0 movement
+                    if (CoreWorldLinks.TryGetValue(currentId, out int pairedId) && !visited.Contains(pairedId))
+                    { visited.Add(pairedId); queue.Enqueue((pairedId, dist)); }
                 }
             }
             return result;
         }
 
-        /// <summary>BFS shortest path from fromNodeId to toNodeId. Returns empty list if unreachable.</summary>
         public List<int> FindPath(int fromNodeId, int toNodeId)
         {
             if (fromNodeId == toNodeId) return new List<int> { fromNodeId };
@@ -83,35 +81,32 @@ namespace OuterRim
                 int currentId = queue.Dequeue();
                 if (!nodeLookup.TryGetValue(currentId, out var currentNode)) continue;
 
-                foreach (var neighborId in currentNode.ConnectedNodeIds)
+                var neighbors = new List<int>(currentNode.ConnectedNodeIds);
+                // Add Core World jump
+                if (CoreWorldLinks.TryGetValue(currentId, out int paired))
+                    neighbors.Add(paired);
+
+                foreach (var neighborId in neighbors)
                 {
                     if (visited.Contains(neighborId)) continue;
                     visited.Add(neighborId);
                     parent[neighborId] = currentId;
-
                     if (neighborId == toNodeId)
                     {
-                        // Reconstruct path
                         var path = new List<int>();
                         int step = toNodeId;
                         while (step != fromNodeId)
-                        {
-                            path.Add(step);
-                            step = parent[step];
-                        }
+                        { path.Add(step); step = parent[step]; }
                         path.Add(fromNodeId);
                         path.Reverse();
                         return path;
                     }
-
                     queue.Enqueue(neighborId);
                 }
             }
-
-            return new List<int>(); // unreachable
+            return new List<int>();
         }
 
-        /// <summary>Number of edges in shortest path. Returns -1 if unreachable.</summary>
         public int GetPathCost(int fromNodeId, int toNodeId)
         {
             var path = FindPath(fromNodeId, toNodeId);
@@ -120,8 +115,21 @@ namespace OuterRim
 
         public bool AreConnected(int nodeA, int nodeB)
         {
-            return nodeLookup.TryGetValue(nodeA, out var node) &&
-                   node.ConnectedNodeIds.Contains(nodeB);
+            if (nodeLookup.TryGetValue(nodeA, out var node) && node.ConnectedNodeIds.Contains(nodeB))
+                return true;
+            return CoreWorldLinks.TryGetValue(nodeA, out int paired) && paired == nodeB;
+        }
+
+        /// <summary>Get all players at a given node (for trade detection).</summary>
+        public List<PlayerState> GetPlayersAtNode(int nodeId)
+        {
+            var result = new List<PlayerState>();
+            foreach (var ps in FindObjectsOfType<PlayerState>())
+            {
+                if (ps.CurrentNodeId.Value == nodeId)
+                    result.Add(ps);
+            }
+            return result;
         }
     }
 }

@@ -40,12 +40,10 @@ namespace OuterRim
             if (Instance == null) Instance = this;
             else { Destroy(gameObject); return; }
             rng = new System.Random();
-            Debug.Log($"[GameManager] Awake. IsServer={IsServer}, IsClient={IsClient}");
         }
 
         public override void OnNetworkSpawn()
         {
-            Debug.Log($"[GameManager] OnNetworkSpawn. IsServer={IsServer}");
             currentPhase.OnValueChanged += HandlePhaseChanged;
             currentPlayerIndex.OnValueChanged += HandleActivePlayerChanged;
             if (!IsServer) return;
@@ -60,11 +58,9 @@ namespace OuterRim
 
         private IEnumerator WaitForPlayersCoroutine()
         {
-            Debug.Log($"[GameManager] Waiting for {minPlayersToStart} players. Connected: {NetworkManager.Singleton.ConnectedClients.Count}");
             yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClients.Count >= minPlayersToStart);
             yield return new WaitForSeconds(0.5f);
             CollectAndOrderPlayers();
-            Debug.Log($"[GameManager] Players: {turnOrder.Count}. Starting PlanningPhase.");
             TransitionToPhase(GamePhase.PlanningPhase);
         }
 
@@ -75,10 +71,7 @@ namespace OuterRim
             {
                 var playerObj = kvp.Value.PlayerObject;
                 if (playerObj != null && playerObj.TryGetComponent(out PlayerState ps))
-                {
-                    ps.CurrentNodeId.Value = 0;
-                    turnOrder.Add(ps);
-                }
+                { ps.CurrentNodeId.Value = 0; turnOrder.Add(ps); }
                 else
                 {
                     var go = new GameObject($"Player_{kvp.Key}");
@@ -87,7 +80,6 @@ namespace OuterRim
                     netObj.SpawnWithOwnership(kvp.Key);
                     newPs.CurrentNodeId.Value = 0;
                     turnOrder.Add(newPs);
-                    Debug.Log($"[GameManager] Auto-spawned PlayerState for client {kvp.Key}");
                 }
             }
             Shuffle(turnOrder);
@@ -99,15 +91,13 @@ namespace OuterRim
             if (!IsServer) return;
             planningChoiceMade = false;
             currentPhase.Value = newPhase;
-            Debug.Log($"[GameManager] Phase -> {newPhase}");
 
-            // Outer Rim rule: defeated players must choose Heal during Planning Step
+            // Defeated players auto-heal
             if (newPhase == GamePhase.PlanningPhase)
             {
                 var ap = GetActivePlayer();
                 if (ap != null && ap.IsDefeated.Value)
                 {
-                    Debug.Log($"[GameManager] Player {ap.OwnerClientId} is defeated — auto-healing.");
                     ap.Health.Value = ap.MaxHealth.Value;
                     ap.ShipHealth.Value = ap.MaxShipHealth.Value;
                     ap.RecoverFromDefeat();
@@ -117,11 +107,7 @@ namespace OuterRim
             }
 
             var activePlayer = GetActivePlayer();
-            if (activePlayer == null && newPhase != GamePhase.CheckingWinCondition)
-            {
-                Debug.LogWarning($"[GameManager] No active player for phase {newPhase} — skipping.");
-                return;
-            }
+            if (activePlayer == null && newPhase != GamePhase.CheckingWinCondition) return;
 
             switch (newPhase)
             {
@@ -148,7 +134,7 @@ namespace OuterRim
         [ClientRpc] private void BeginEncounterPhaseClientRpc(ulong id) => OnPhaseChanged?.Invoke(GamePhase.EncounterPhase);
 
         // ═════════════════════════════════════════════════════════════
-        // PLANNING PHASE (Outer Rim: choose 1 — Move, Heal, Credits)
+        // PLANNING PHASE
         // ═════════════════════════════════════════════════════════════
 
         [ServerRpc(RequireOwnership = false)]
@@ -157,39 +143,33 @@ namespace OuterRim
             if (!ValidateActivePlayer(rpcParams.Receive.SenderClientId)) return;
             if (currentPhase.Value != GamePhase.PlanningPhase) return;
             if (planningChoiceMade) return;
-
             planningChoiceMade = true;
             var player = GetActivePlayer();
-
             switch (choice)
             {
-                case PlanningChoice.MoveShip:
-                    TransitionToPhase(GamePhase.ActionPhase);
-                    break;
+                case PlanningChoice.MoveShip: TransitionToPhase(GamePhase.ActionPhase); break;
                 case PlanningChoice.HealDamage:
                     player.Health.Value = player.MaxHealth.Value;
                     player.ShipHealth.Value = player.MaxShipHealth.Value;
-                    AdvanceTurn();
-                    break;
+                    AdvanceTurn(); break;
                 case PlanningChoice.CollectCredits:
                     player.Credits.Value += creditsForResting;
-                    AdvanceTurn();
-                    break;
+                    AdvanceTurn(); break;
             }
         }
 
         // ═════════════════════════════════════════════════════════════
-        // ACTION PHASE (Outer Rim: any/all — Move, Market, Trade, Deliver, Job)
+        // ACTION PHASE
         // ═════════════════════════════════════════════════════════════
 
         [ServerRpc(RequireOwnership = false)]
-        public void ConfirmShipMovementServerRpc(int destinationNodeId, ServerRpcParams rpcParams = default)
+        public void ConfirmShipMovementServerRpc(int destId, ServerRpcParams rpcParams = default)
         {
             if (!ValidateActivePlayer(rpcParams.Receive.SenderClientId)) return;
             if (currentPhase.Value != GamePhase.ActionPhase) return;
             var player = GetActivePlayer();
             if (ShipMovement.Instance != null)
-                ShipMovement.Instance.TryMovePlayer(player, destinationNodeId);
+                ShipMovement.Instance.TryMovePlayer(player, destId);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -197,8 +177,7 @@ namespace OuterRim
         {
             if (!ValidateActivePlayer(rpcParams.Receive.SenderClientId)) return;
             if (currentPhase.Value != GamePhase.ActionPhase) return;
-            var player = GetActivePlayer();
-            DeckManager.Instance?.TryPurchaseCard(player, deckType, rowIndex);
+            DeckManager.Instance?.TryPurchaseCard(GetActivePlayer(), deckType, rowIndex);
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -206,35 +185,48 @@ namespace OuterRim
         {
             if (!ValidateActivePlayer(rpcParams.Receive.SenderClientId)) return;
             if (currentPhase.Value != GamePhase.ActionPhase) return;
-            var player = GetActivePlayer();
-            DeckManager.Instance?.TryCycleCard(player, deckType, rowIndex);
+            DeckManager.Instance?.TryCycleCard(GetActivePlayer(), deckType, rowIndex);
         }
 
-        /// <summary>Deliver cargo to current planet for reward (Outer Rim Deliver action).</summary>
         [ServerRpc(RequireOwnership = false)]
-        public void DeliverCargoServerRpc(int cargoCardId, ServerRpcParams rpcParams = default)
+        public void DeliverCargoServerRpc(int cardId, ServerRpcParams rpcParams = default)
         {
             if (!ValidateActivePlayer(rpcParams.Receive.SenderClientId)) return;
             if (currentPhase.Value != GamePhase.ActionPhase) return;
-            var player = GetActivePlayer();
-            // Deliver action: remove cargo from inventory, gain credits + fame based on card
-            // Simplified: gain 2000 credits + 1 fame per delivery
-            player.AddCredits(2000);
-            player.AddFame(1);
-            Debug.Log($"[GameManager] Player {player.OwnerClientId} delivered cargo for +2000cr +1 fame");
+            var p = GetActivePlayer();
+            p.AddCredits(2000); p.AddFame(1);
+            Debug.Log($"[GameManager] Player {p.OwnerClientId} delivered cargo");
         }
 
-        /// <summary>Complete a bounty at current planet (Outer Rim: find contact, fight, capture).</summary>
         [ServerRpc(RequireOwnership = false)]
-        public void CompleteBountyServerRpc(int bountyCardId, ServerRpcParams rpcParams = default)
+        public void CompleteBountyServerRpc(int cardId, ServerRpcParams rpcParams = default)
         {
             if (!ValidateActivePlayer(rpcParams.Receive.SenderClientId)) return;
             if (currentPhase.Value != GamePhase.ActionPhase) return;
-            var player = GetActivePlayer();
-            // Simplified: gain bounty reward
-            player.AddCredits(5000);
-            player.AddFame(2);
-            Debug.Log($"[GameManager] Player {player.OwnerClientId} completed bounty for +5000cr +2 fame");
+            var p = GetActivePlayer();
+            p.AddCredits(5000); p.AddFame(2);
+            Debug.Log($"[GameManager] Player {p.OwnerClientId} completed bounty");
+        }
+
+        /// <summary>Outer Rim Trade action: transfer credits between players in same space.</summary>
+        [ServerRpc(RequireOwnership = false)]
+        public void TradeCreditsServerRpc(ulong targetClientId, int amount, ServerRpcParams rpcParams = default)
+        {
+            ulong sender = rpcParams.Receive.SenderClientId;
+            if (!ValidateActivePlayer(sender)) return;
+            if (currentPhase.Value != GamePhase.ActionPhase) return;
+            if (amount <= 0) return;
+
+            var from = GetPlayerByClient(sender);
+            var to = GetPlayerByClient(targetClientId);
+            if (from == null || to == null || from == to) return;
+
+            // Must be in same space (Outer Rim rule)
+            if (from.CurrentNodeId.Value != to.CurrentNodeId.Value) return;
+
+            if (!from.SpendCredits(amount)) return;
+            to.AddCredits(amount);
+            Debug.Log($"[GameManager] Trade: Player {sender} → {targetClientId}: {amount} credits");
         }
 
         [ServerRpc(RequireOwnership = false)]
@@ -263,60 +255,56 @@ namespace OuterRim
         public void AdvanceTurn()
         {
             if (!IsServer) return;
-            int nextIndex = currentPlayerIndex.Value + 1;
-            if (nextIndex >= turnOrder.Count)
-            {
-                nextIndex = 0;
-                turnNumber.Value++;
-            }
-            currentPlayerIndex.Value = nextIndex;
+            int next = currentPlayerIndex.Value + 1;
+            if (next >= turnOrder.Count) { next = 0; turnNumber.Value++; }
+            currentPlayerIndex.Value = next;
             TransitionToPhase(GamePhase.PlanningPhase);
         }
 
         public PlayerState GetActivePlayer()
         {
             if (turnOrder.Count == 0) return null;
-            int index = currentPlayerIndex.Value;
-            return index >= 0 && index < turnOrder.Count ? turnOrder[index] : null;
+            int i = currentPlayerIndex.Value;
+            return i >= 0 && i < turnOrder.Count ? turnOrder[i] : null;
+        }
+
+        public PlayerState GetPlayerByClient(ulong clientId)
+        {
+            foreach (var p in turnOrder)
+                if (p.OwnerClientId == clientId) return p;
+            return null;
         }
 
         // ═════════════════════════════════════════════════════════════
-        // WIN CONDITION (Outer Rim: fame >= threshold)
+        // WIN CONDITION
         // ═════════════════════════════════════════════════════════════
 
         private void CheckWinCondition()
         {
             if (!IsServer) return;
-            foreach (var player in turnOrder)
+            foreach (var p in turnOrder)
             {
-                if (player.Fame.Value >= fameToWin)
+                if (p.Fame.Value >= fameToWin)
                 {
                     currentPhase.Value = GamePhase.GameOver;
-                    AnnounceGameOverClientRpc(player.OwnerClientId);
-                    OnGameOver?.Invoke(player.OwnerClientId);
+                    AnnounceGameOverClientRpc(p.OwnerClientId);
+                    OnGameOver?.Invoke(p.OwnerClientId);
                     return;
                 }
             }
             AdvanceTurn();
         }
 
-        [ClientRpc]
-        private void AnnounceGameOverClientRpc(ulong winnerClientId)
-        {
-            OnPhaseChanged?.Invoke(GamePhase.GameOver);
-            OnGameOver?.Invoke(winnerClientId);
-        }
+        [ClientRpc] private void AnnounceGameOverClientRpc(ulong id) { OnPhaseChanged?.Invoke(GamePhase.GameOver); OnGameOver?.Invoke(id); }
 
-        private bool ValidateActivePlayer(ulong senderClientId)
+        private bool ValidateActivePlayer(ulong clientId)
         {
             if (!IsServer) return false;
-            var active = GetActivePlayer();
-            if (active == null) return false;
-            return active.OwnerClientId == senderClientId;
+            var a = GetActivePlayer();
+            return a != null && a.OwnerClientId == clientId;
         }
 
         private void HandlePhaseChanged(GamePhase prev, GamePhase curr) => OnPhaseChanged?.Invoke(curr);
-
         private void HandleActivePlayerChanged(int prev, int curr)
         {
             if (prev >= 0 && prev < turnOrder.Count) turnOrder[prev].SetTurnActive(false);
@@ -324,9 +312,6 @@ namespace OuterRim
         }
 
         private void Shuffle<T>(List<T> list)
-        {
-            int n = list.Count;
-            while (n > 1) { n--; int k = rng.Next(n + 1); (list[k], list[n]) = (list[n], list[k]); }
-        }
+        { int n = list.Count; while (n > 1) { n--; int k = rng.Next(n + 1); (list[k], list[n]) = (list[n], list[k]); } }
     }
 }
