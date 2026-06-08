@@ -3270,7 +3270,8 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 0}
-    PlayerPrefab: {fileID: 0}
+    PlayerPrefab: {fileID: 2472155255926704624, guid: 94c3c39536ea93e48bcfc008d23a12fe,
+      type: 3}
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 9c9f83115d5305ec0a5c950c815fedca, type: 2}
@@ -4342,7 +4343,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33be469b8c033ff95a865896126bb37b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OuterRim.DataBankManager
-  databankCards: []
+  databankCards:
+  - {fileID: 11400000, guid: b0f3086268acaf7e09cfb50564250bb1, type: 2}
+  - {fileID: 11400000, guid: beead70f7bbb297a4b9edaef276d846d, type: 2}
+  - {fileID: 11400000, guid: 539e41c2ee75f5f5cac9e3fe08ba840f, type: 2}
+  - {fileID: 11400000, guid: 6bc26e82e923c667fb5af7a935e15948, type: 2}
+  - {fileID: 11400000, guid: ad23e6a4a6b5f7e5296abc0e60fda16e, type: 2}
+  - {fileID: 11400000, guid: 03e848a81aee55fd69b82cbce2264218, type: 2}
+  - {fileID: 11400000, guid: 8df5b298d2797f3f390597dc12eeaf9a, type: 2}
+  - {fileID: 11400000, guid: 3052414c86c19a376817ca64e173353b, type: 2}
+  - {fileID: 11400000, guid: ba38d920eece20c2e91f0b4d0ee7bd9a, type: 2}
+  - {fileID: 11400000, guid: 43023b501a9d18c05876e1f08e83d709, type: 2}
+  - {fileID: 11400000, guid: 5637dd46a0be5fdd8b0c10d218bda6a6, type: 2}
+  - {fileID: 11400000, guid: a99fbe747ff31526fb558953d75be650, type: 2}
+  - {fileID: 11400000, guid: 3f0c76ebb0bcc5e97ba82d56c0dca935, type: 2}
 --- !u!4 &1939454370
 Transform:
   m_ObjectHideFlags: 0

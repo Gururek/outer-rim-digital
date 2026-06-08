@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:OuterRim:DatabankCard
   CardNumber: 22
   CardName: ISB Agent
-  Description: "ISB Agent \u2014 Imperial contact. Class: Yellow. Bounty: 7000cr.
-    Combat: 4."
+  Description: 'Databank #22: ISB Agent. Faction: Imperial. Class: Yellow. Bounty:
+    7000cr. Combat: 4.'
   Faction: 2
   ContactClass: 2
   BountyReward: 7000

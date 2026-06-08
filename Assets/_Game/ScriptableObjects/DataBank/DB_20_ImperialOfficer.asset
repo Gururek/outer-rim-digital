@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:OuterRim:DatabankCard
   CardNumber: 20
   CardName: Imperial Officer
-  Description: "Imperial Officer \u2014 Imperial contact. Class: White. Bounty: 3500cr.
-    Combat: 2."
+  Description: 'Databank #20: Imperial Officer. Faction: Imperial. Class: White.
+    Bounty: 3500cr. Combat: 2.'
   Faction: 2
   ContactClass: 0
   BountyReward: 3500

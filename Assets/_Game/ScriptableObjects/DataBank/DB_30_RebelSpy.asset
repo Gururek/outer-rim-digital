@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:OuterRim:DatabankCard
   CardNumber: 30
   CardName: Rebel Spy
-  Description: "Rebel Spy \u2014 Rebel contact. Class: White. Bounty: 3000cr. Combat:
-    1."
+  Description: 'Databank #30: Rebel Spy. Faction: Rebel. Class: White. Bounty: 3000cr.
+    Combat: 1.'
   Faction: 3
   ContactClass: 0
   BountyReward: 3000

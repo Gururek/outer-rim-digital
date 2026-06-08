@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:OuterRim:DatabankCard
   CardNumber: 2
   CardName: Hutt Informant
-  Description: "Hutt Informant \u2014 Hutt contact. Class: Green. Bounty: 4000cr.
-    Combat: 2."
+  Description: 'Databank #2: Hutt Informant. Faction: Hutt. Class: White. Bounty:
+    2000cr. Combat: 1.'
   Faction: 0
-  ContactClass: 1
-  BountyReward: 4000
-  CombatValue: 2
+  ContactClass: 0
+  BountyReward: 2000
+  CombatValue: 1
   CardArt: {fileID: 0}

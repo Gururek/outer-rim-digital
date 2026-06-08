@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:OuterRim:DatabankCard
   CardNumber: 11
   CardName: Pyke Smuggler
-  Description: "Pyke Smuggler \u2014 Syndicate contact. Class: Green. Bounty: 4500cr.
-    Combat: 3."
+  Description: 'Databank #11: Pyke Smuggler. Faction: Syndicate. Class: White. Bounty:
+    2500cr. Combat: 2.'
   Faction: 1
-  ContactClass: 1
-  BountyReward: 4500
-  CombatValue: 3
+  ContactClass: 0
+  BountyReward: 2500
+  CombatValue: 2
   CardArt: {fileID: 0}

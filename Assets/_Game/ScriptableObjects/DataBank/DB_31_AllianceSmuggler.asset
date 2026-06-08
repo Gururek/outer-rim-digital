@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:OuterRim:DatabankCard
   CardNumber: 31
   CardName: Alliance Smuggler
-  Description: "Alliance Smuggler \u2014 Rebel contact. Class: Green. Bounty: 4000cr.
-    Combat: 2."
+  Description: 'Databank #31: Alliance Smuggler. Faction: Rebel. Class: Green. Bounty:
+    4000cr. Combat: 2.'
   Faction: 3
   ContactClass: 1
   BountyReward: 4000

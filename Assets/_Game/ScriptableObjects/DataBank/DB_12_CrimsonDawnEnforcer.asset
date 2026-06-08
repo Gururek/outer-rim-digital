@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:OuterRim:DatabankCard
   CardNumber: 12
   CardName: Crimson Dawn Enforcer
-  Description: "Crimson Dawn Enforcer \u2014 Syndicate contact. Class: Yellow. Bounty:
-    6000cr. Combat: 4."
+  Description: 'Databank #12: Crimson Dawn Enforcer. Faction: Syndicate. Class: Yellow.
+    Bounty: 6000cr. Combat: 4.'
   Faction: 1
   ContactClass: 2
   BountyReward: 6000

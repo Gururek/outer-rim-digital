@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:OuterRim:DatabankCard
   CardNumber: 21
   CardName: Stormtrooper Captain
-  Description: "Stormtrooper Captain \u2014 Imperial contact. Class: Green. Bounty:
-    5000cr. Combat: 3."
+  Description: 'Databank #21: Stormtrooper Captain. Faction: Imperial. Class: Green.
+    Bounty: 5000cr. Combat: 3.'
   Faction: 2
   ContactClass: 1
   BountyReward: 5000

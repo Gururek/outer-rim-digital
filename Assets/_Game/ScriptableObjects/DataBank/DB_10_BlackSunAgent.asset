@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:OuterRim:DatabankCard
   CardNumber: 10
   CardName: Black Sun Agent
-  Description: "Black Sun Agent \u2014 Syndicate contact. Class: White. Bounty: 3000cr.
-    Combat: 2."
+  Description: 'Databank #10: Black Sun Agent. Faction: Syndicate. Class: Green.
+    Bounty: 3500cr. Combat: 2.'
   Faction: 1
-  ContactClass: 0
-  BountyReward: 3000
+  ContactClass: 1
+  BountyReward: 3500
   CombatValue: 2
   CardArt: {fileID: 0}

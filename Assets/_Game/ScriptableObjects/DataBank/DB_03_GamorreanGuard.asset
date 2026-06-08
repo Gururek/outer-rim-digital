@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:OuterRim:DatabankCard
   CardNumber: 3
   CardName: Gamorrean Guard
-  Description: "Gamorrean Guard \u2014 Hutt contact. Class: Yellow. Bounty: 5000cr.
-    Combat: 3."
+  Description: 'Databank #3: Gamorrean Guard. Faction: Hutt. Class: Yellow. Bounty:
+    5000cr. Combat: 3.'
   Faction: 0
   ContactClass: 2
   BountyReward: 5000
