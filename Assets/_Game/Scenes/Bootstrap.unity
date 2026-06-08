@@ -7419,7 +7419,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2728aea216a71e617bbf64bbbb72e848, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OuterRim.ShipVisualManager
-  shipModelPrefabs: []
+  shipModelPrefabs:
+  - {fileID: 4775077305408892402, guid: b8341a328a438e260a31250435d8ecf3, type: 3}
+  - {fileID: 8360142795258527912, guid: 9cf7729d81be96baa8fccbd119f11614, type: 3}
+  - {fileID: 1025338805845063697, guid: 34ba1e97d58307731a8798dc01211041, type: 3}
+  - {fileID: 6792906076712897067, guid: 96f6ee97858b4eaebb431cc64bc78b8d, type: 3}
+  - {fileID: 2456072378900080923, guid: 3b89b258ed990fafa80523139d8f963a, type: 3}
+  - {fileID: 3622177948782949945, guid: 22ae2a60a511eed1eb7a6f9501c75b0e, type: 3}
+  - {fileID: 1168851848064237276, guid: cd6dd0b0b7ff2c84a930a26289c0f1dd, type: 3}
+  - {fileID: 7369569403382397684, guid: 046851498aee1d1bcb8fd15b3141cd2f, type: 3}
+  - {fileID: 5085125172634080738, guid: 78cfe29673e620336afc57bf58a6d33d, type: 3}
+  - {fileID: 8617715897529281242, guid: 7a5d994c682d46979a377ef708d7e15b, type: 3}
+  - {fileID: 8439728600959834524, guid: e6306b54e0f9f5782b837b27de8b3403, type: 3}
+  - {fileID: 6163176928388269182, guid: 5e245886d4dfa8a0aa9ea73cbdcf6dc7, type: 3}
+  - {fileID: 6724266662908066568, guid: 207b270452c12aa478cb73a75af00c9d, type: 3}
+  - {fileID: 9061307491371549324, guid: 279ddedf6cbebfae19dc08bcd3603a67, type: 3}
+  - {fileID: 1634000243692104663, guid: fe886f787e8c9b211bf467fb59c86bc8, type: 3}
+  - {fileID: 800031090617266093, guid: d0d7775910f2312e385476ad99bccb45, type: 3}
+  - {fileID: 6759710180257491439, guid: 6a8c03b02998fb98194eab99c9a75525, type: 3}
+  - {fileID: 6647636132781870756, guid: 11f820c8b0108c6c1a3d3993cc1c30f5, type: 3}
+  - {fileID: 1766351766644001242, guid: 3bb5be4a8e6eec4fab1b8db59156c7fe, type: 3}
+  - {fileID: 7748663015445124649, guid: c82928228d3f03b3082ddcae2c639b3c, type: 3}
+  - {fileID: 1662557209434538017, guid: 715a83cacd6924098855c791c7032c7d, type: 3}
+  - {fileID: 2178081913598522232, guid: b6e784e914997e3b7b29ebd2ab932563, type: 3}
+  - {fileID: 868871763692758778, guid: 2504e73d762023feeade3b4db68d1b29, type: 3}
+  - {fileID: 4018718597475492479, guid: fc3823f527eb1686bac109dd29c21d78, type: 3}
+  - {fileID: 4550529888758250555, guid: a59a8112b0a12db1eae33ab957e644b9, type: 3}
+  - {fileID: 2856926658975483429, guid: b63f75ad747e9f068acf9690078f9aba, type: 3}
+  - {fileID: 7116194957893546088, guid: f68ce676117974c4aae886da57f621d2, type: 3}
+  - {fileID: 3998486541648003189, guid: 986124ced160ddc9c8e28ff791e5eb18, type: 3}
   patrolShipPrefab: {fileID: 0}
   shipYOffset: 0.5
   bobHeight: 0.15
@@ -8308,6 +8336,53 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &1786388767
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1786388769}
+  - component: {fileID: 1786388768}
+  m_Layer: 0
+  m_Name: CockpitOverlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1786388768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1786388767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecf87c5bd5fd7a222a6e6fd90776e4ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OuterRim.CockpitOverlay
+  frameColor: {r: 0.1, g: 0.1, b: 0.15, a: 0.85}
+  frameThickness: 60
+  cornerRadius: 20
+--- !u!4 &1786388769
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1786388767}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!21 &1811402067
 Material:
   serializedVersion: 8
@@ -10364,6 +10439,96 @@ Material:
     - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
+--- !u!1 &2117222720
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2117222723}
+  - component: {fileID: 2117222722}
+  - component: {fileID: 2117222721}
+  m_Layer: 0
+  m_Name: Ship_00
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!23 &2117222721
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117222720}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &2117222722
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117222720}
+  m_Mesh: {fileID: -2432090755550338912, guid: a39ff72c0f169465e9943b27a96e209c, type: 3}
+--- !u!4 &2117222723
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117222720}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2133227103
 GameObject:
   m_ObjectHideFlags: 0
@@ -10494,3 +10659,5 @@ SceneRoots:
   - {fileID: 211335309}
   - {fileID: 538273465}
   - {fileID: 1565917468}
+  - {fileID: 2117222723}
+  - {fileID: 1786388769}
