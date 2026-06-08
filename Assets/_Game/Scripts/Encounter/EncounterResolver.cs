@@ -1,4 +1,4 @@
-// EncounterResolver.cs — V2 per Outer Rim rulebooks
+// EncounterResolver.cs — V2: uses PatrolManager + CombatResolver per rulebooks
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +11,8 @@ namespace OuterRim
         public static EncounterResolver Instance { get; private set; }
         [SerializeField] private float encounterDelay = 0.3f;
         [SerializeField] private float combatDelay = 2.5f;
+
+        // Contact tokens: nodeId -> databank card number
         private Dictionary<int, int> contactTokens = new();
 
         private void Awake()
@@ -21,29 +23,38 @@ namespace OuterRim
 
         public override void OnNetworkSpawn()
         {
-            if (IsServer) PlaceContactTokens();
+            if (IsServer)
+            {
+                PlaceContactTokens();
+                PatrolManager.Instance?.PlacePatrols();
+            }
         }
 
         private void PlaceContactTokens()
         {
             contactTokens.Clear();
-            if (MapManager.Instance == null) return;
-            var factionPlanets = new Dictionary<FactionType, List<int>>();
-            foreach (var node in MapManager.Instance.allNodes)
+            if (MapManager.Instance == null || DataBankManager.Instance == null) return;
+
+            // Place one contact per faction from the databank
+            foreach (FactionType faction in new[] { FactionType.Hutt, FactionType.Syndicate, FactionType.Imperial, FactionType.Rebel })
             {
-                if (node.Type == MapNodeType.Planet && node.PlanetFactionType != FactionType.None)
+                var cards = DataBankManager.Instance.GetCardsByFaction(faction);
+                if (cards.Count == 0) continue;
+
+                // Find a planet of that faction
+                var planetNodes = new List<int>();
+                foreach (var node in MapManager.Instance.allNodes)
+                    if (node.Type == MapNodeType.Planet && node.PlanetFactionType == faction)
+                        planetNodes.Add(node.NodeId);
+
+                if (planetNodes.Count > 0)
                 {
-                    if (!factionPlanets.ContainsKey(node.PlanetFactionType))
-                        factionPlanets[node.PlanetFactionType] = new List<int>();
-                    factionPlanets[node.PlanetFactionType].Add(node.NodeId);
+                    int planetId = planetNodes[Random.Range(0, planetNodes.Count)];
+                    int cardNum = cards[Random.Range(0, cards.Count)].CardNumber;
+                    contactTokens[planetId] = cardNum;
                 }
             }
-            int tid = 100;
-            foreach (var kvp in factionPlanets)
-            {
-                if (kvp.Value.Count == 0) continue;
-                contactTokens[kvp.Value[Random.Range(0, kvp.Value.Count)]] = tid++;
-            }
+            Debug.Log($"[Encounter] Placed {contactTokens.Count} contact tokens.");
         }
 
         public void ResolveEncounter(PlayerState player)
@@ -64,83 +75,116 @@ namespace OuterRim
                 yield break;
             }
 
-            string result;
-            if (contactTokens.ContainsKey(node.NodeId))
+            // V2: Check for mandatory patrol (negative rep)
+            var mandatoryPatrol = PatrolManager.Instance?.GetMandatoryPatrol(player);
+            if (mandatoryPatrol != null)
             {
+                yield return StartCoroutine(HandlePatrolCombat(player, mandatoryPatrol));
+            }
+            else if (contactTokens.ContainsKey(node.NodeId))
+            {
+                int cardNum = contactTokens[node.NodeId];
                 contactTokens.Remove(node.NodeId);
-                player.AddCredits(1000); player.AddFame(1);
-                result = $"Contact found at {node.NodeName}! +1000cr +1 Fame.";
+                var card = DataBankManager.Instance?.GetCard(cardNum);
+                player.AddCredits(card?.BountyReward ?? 1000);
+                player.AddFame(1);
+                NotifyResultClientRpc(player.OwnerClientId, $"Contact found: {card?.CardName ?? "Unknown"}! +{card?.BountyReward ?? 1000}cr +1 Fame.");
             }
             else if (node.Type == MapNodeType.NavPoint || node.Type == MapNodeType.Maelstrom)
             {
-                result = ResolvePatrolEncounter(player, node);
+                yield return StartCoroutine(HandleNavPointEncounter(player, node));
             }
-            else
+            else if (node.Type == MapNodeType.Planet)
             {
-                result = ResolvePlanetEncounter(player, node);
+                HandlePlanetEncounter(player, node);
             }
 
-            NotifyResultClientRpc(player.OwnerClientId, result);
             yield return new WaitForSeconds(combatDelay);
             GameManager.Instance?.NotifyEncounterComplete();
         }
 
-        private string ResolvePatrolEncounter(PlayerState player, MapNode node)
+        private IEnumerator HandlePatrolCombat(PlayerState player, Patrol patrol)
         {
-            FactionType faction = node.PlanetFactionType;
-            ReputationStatus rep = player.GetReputation(faction);
+            NotifyResultClientRpc(player.OwnerClientId, $"Forced patrol encounter: {patrol.Faction} L{(int)patrol.Level}!");
 
-            // V2: Negative rep = forced patrol encounter (auto-detect)
-            if (rep == ReputationStatus.Negative)
+            if (patrol.IsInvulnerable)
             {
-                int patrolDice = faction == FactionType.Imperial ? 3 : 2;
-                if (CombatResolver.Instance != null)
-                    StartCoroutine(CombatResolver.Instance.ResolveShipCombat(player, patrolDice, faction));
-                return $"Forced patrol encounter ({faction}) — negative reputation!";
+                // V2: Level 4 — always defeats player
+                player.TakeHullDamage(5);
+                NotifyResultClientRpc(player.OwnerClientId, $"Level-4 {patrol.Faction} patrol is INVULNERABLE! Took 5 damage.");
+                yield break;
             }
 
-            // Base detection 2/6, positive rep reduces
-            int detection = rep == ReputationStatus.Positive ? 0 : 2;
-            if (Random.Range(0, 6) >= detection)
-                return $"Slipped past {faction} patrol at {node.NodeName}.";
-
-            int pd = faction == FactionType.Imperial ? 3 : 2;
             if (CombatResolver.Instance != null)
-                StartCoroutine(CombatResolver.Instance.ResolveShipCombat(player, pd, faction));
-            return $"Patrol detected at {node.NodeName}! Fighting {faction} patrol.";
+            {
+                yield return StartCoroutine(CombatResolver.Instance.ResolveShipCombat(player, patrol.CombatDice, patrol.Faction));
+                PatrolManager.Instance?.DefeatPatrol(patrol, player);
+            }
         }
 
-        private string ResolvePlanetEncounter(PlayerState player, MapNode node)
+        private IEnumerator HandleNavPointEncounter(PlayerState player, MapNode node)
+        {
+            var patrols = PatrolManager.Instance?.GetPatrolsAtNode(node.NodeId);
+            if (patrols != null && patrols.Count > 0)
+            {
+                var patrol = patrols[0];
+                ReputationStatus rep = player.GetReputation(patrol.Faction);
+
+                // V2: Negative rep = forced encounter
+                if (rep == ReputationStatus.Negative)
+                {
+                    yield return StartCoroutine(HandlePatrolCombat(player, patrol));
+                    yield break;
+                }
+
+                // Base detection 2/6, positive rep reduces to 0
+                int detection = rep == ReputationStatus.Positive ? 0 : 2;
+                if (Random.Range(0, 6) < detection)
+                {
+                    yield return StartCoroutine(HandlePatrolCombat(player, patrol));
+                    yield break;
+                }
+                NotifyResultClientRpc(player.OwnerClientId, $"Slipped past {patrol.Faction} patrol at {node.NodeName}.");
+                yield break;
+            }
+            NotifyResultClientRpc(player.OwnerClientId, $"No patrols at {node.NodeName}.");
+        }
+
+        private void HandlePlanetEncounter(PlayerState player, MapNode node)
         {
             if (DeckManager.Instance != null)
             {
                 var card = DeckManager.Instance.DrawPlanetEncounterCard(node.NodeName);
-                if (card != null) return ResolveEncounterCard(player, card);
+                if (card != null)
+                {
+                    ResolveEncounterCard(player, card);
+                    return;
+                }
             }
+            // Fallback skill test
             int hits = 0;
             for (int i = 0; i < 2; i++) if (Random.Range(0, 6) >= 3) hits++;
-            if (hits >= 1) { player.AddCredits(Random.Range(1000, 3000)); return $"Encounter at {node.NodeName}: success!"; }
-            return $"Nothing of interest at {node.NodeName}.";
+            if (hits >= 1) { player.AddCredits(Random.Range(1000, 3000)); NotifyResultClientRpc(player.OwnerClientId, $"Encounter success at {node.NodeName}."); }
+            else NotifyResultClientRpc(player.OwnerClientId, $"Nothing at {node.NodeName}.");
         }
 
-        private string ResolveEncounterCard(PlayerState player, EncounterCardData card)
+        private void ResolveEncounterCard(PlayerState player, EncounterCardData card)
         {
             if (!card.RequiresCheck)
-            {
-                player.AddCredits(card.SuccessCredits); player.AddFame(card.SuccessFame);
-                return card.EncounterText;
-            }
+            { player.AddCredits(card.SuccessCredits); player.AddFame(card.SuccessFame); NotifyResultClientRpc(player.OwnerClientId, card.EncounterText); return; }
+
             int hits = 0;
             for (int i = 0; i < 2; i++) if (Random.Range(0, 6) >= 3) hits++;
-            bool pass = hits >= card.CheckDifficulty;
-            if (pass)
+            if (hits >= card.CheckDifficulty)
             {
                 player.AddCredits(card.SuccessCredits); player.AddFame(card.SuccessFame);
-                if (card.SuccessRepDelta != 0) player.SetReputation(card.SuccessRepFaction, card.SuccessRepDelta > 0 ? ReputationStatus.Positive : ReputationStatus.Negative);
-                return $"{card.CardName}: PASS!";
+                NotifyResultClientRpc(player.OwnerClientId, $"{card.CardName}: PASS!");
             }
-            if (card.FailureDamage > 0) player.TakeHullDamage(card.FailureDamage);
-            return $"{card.CardName}: FAIL. {card.FailureDamage} dmg.";
+            else
+            {
+                if (card.FailureDamage > 0) player.TakeHullDamage(card.FailureDamage);
+                NotifyResultClientRpc(player.OwnerClientId, $"{card.CardName}: FAIL.");
+            }
         }
 
         private MapNode GetPlayerNode(PlayerState player)
@@ -150,6 +194,6 @@ namespace OuterRim
         }
 
         [ClientRpc]
-        private void NotifyResultClientRpc(ulong cid, string r) => Debug.Log($"[Encounter] P{cid}: {r}");
+        private void NotifyResultClientRpc(ulong cid, string msg) => Debug.Log($"[Encounter] P{cid}: {msg}");
     }
 }

@@ -214,9 +214,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 421655a48d0d07c7a866c412845d758d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OuterRim.GameManager
-  fameToWin: 10
-  creditsForResting: 2000
-  minPlayersToStart: 1
+  fameRequirement: 10
+  creditsFromResting: 2000
+  defeatedCreditPenalty: 3000
 --- !u!114 &142004683
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1091,6 +1091,51 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 331793883}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &347775607
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 347775609}
+  - component: {fileID: 347775608}
+  m_Layer: 0
+  m_Name: DataBankManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &347775608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 347775607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 33be469b8c033ff95a865896126bb37b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OuterRim.DataBankManager
+  databankCards: []
+--- !u!4 &347775609
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 347775607}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &506553317
 GameObject:
   m_ObjectHideFlags: 0
@@ -2196,24 +2241,18 @@ MonoBehaviour:
   cargoCards:
   - {fileID: 11400000, guid: 65ff9af0e5912559a9af74d3695dac0f, type: 2}
   - {fileID: 11400000, guid: 18306b65dbb394f1d894ef8356d4b861, type: 2}
-  gearCards:
-  - {fileID: 11400000, guid: 1178acf08d8c3fee38e36a029f3c842a, type: 2}
-  - {fileID: 11400000, guid: 48298caae2bcbff89aa7d03f7ed2009e, type: 2}
-  modCards:
-  - {fileID: 11400000, guid: 733ac16201d03b0349ac8cd6a00cc6bf, type: 2}
-  - {fileID: 11400000, guid: cb856018bfdb6d737af40cefcc116538, type: 2}
+  gearAndModCards: []
   jobCards:
   - {fileID: 11400000, guid: 9b1ddb3b69c4b571fa6a3b065f288a8e, type: 2}
   - {fileID: 11400000, guid: a31d47815ff96d5c48e1826951daf686, type: 2}
   luxuryCards:
   - {fileID: 11400000, guid: 0cee55110e8278090b80282f4007c100, type: 2}
   - {fileID: 11400000, guid: dd8a554b66b25d6298433af0fcfce7f3, type: 2}
+  shipCards: []
   encounterCards:
   - {fileID: 11400000, guid: beee7591caa092eac99c55ab620d4443, type: 2}
   - {fileID: 11400000, guid: 1fb420f826bf28a348c31925d5e6edf6, type: 2}
-  useJsonPipeline: 0
-  cardDatabaseJson: {fileID: 0}
-  defaultMarketRowSize: 3
+  marketRowSize: 3
   cycleCost: 200
 --- !u!4 &851803101
 Transform:
@@ -3000,6 +3039,51 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &1278259301
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1278259303}
+  - component: {fileID: 1278259302}
+  m_Layer: 0
+  m_Name: PatrolManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1278259302
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1278259301}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a9292c7517e79534bd58238ade88a87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OuterRim.PatrolManager
+  patrolsPerFaction: 4
+--- !u!4 &1278259303
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1278259301}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1291206659
 GameObject:
   m_ObjectHideFlags: 0
@@ -3831,6 +3915,73 @@ MonoBehaviour:
   NodeName: Kessel
   ConnectedNodeIds: 04000000
   PlanetFactionType: 0
+--- !u!1 &1576575445
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1576575447}
+  - component: {fileID: 1576575446}
+  - component: {fileID: 1576575448}
+  m_Layer: 0
+  m_Name: CombatResolver
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1576575446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1576575445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
+  GlobalObjectIdHash: 998908897
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!4 &1576575447
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1576575445}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1576575448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1576575445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00bb1a6b591f0e606bd152fa61622dbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OuterRim.CombatResolver
+  standardDie: {fileID: 0}
 --- !u!1 &1658519767
 GameObject:
   m_ObjectHideFlags: 0
@@ -5033,3 +5184,6 @@ SceneRoots:
   - {fileID: 1300092538}
   - {fileID: 514105058}
   - {fileID: 780778436}
+  - {fileID: 347775609}
+  - {fileID: 1278259303}
+  - {fileID: 1576575447}
