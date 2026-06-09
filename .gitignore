@@ -23,3 +23,8 @@
 .DS_Store
 Thumbs.db
 To Work On.zip
+
+# Large binary/image dirs — not for git
+To Work On/
+.mcp/node_modules/
+.mcp/unity-relay/

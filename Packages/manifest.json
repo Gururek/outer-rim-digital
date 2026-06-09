@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "com.ivanmurzak.unity.mcp": "0.79.1",
+    "com.unity.ai.assistant": "2.11.0-pre.1",
+    "com.unity.ai.inference": "2.6.1",
     "com.unity.netcode.gameobjects": "1.12.0",
     "com.unity.render-pipelines.universal": "17.0.3",
     "com.unity.services.authentication": "3.3.0",
