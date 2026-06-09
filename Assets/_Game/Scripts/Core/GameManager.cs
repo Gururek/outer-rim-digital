@@ -1,8 +1,9 @@
-// GameManager.cs — V2 per Outer Rim rulebooks
-using System.Collections;
+// GameManager.cs — V2: full turn cycle, 6-market buying, cargo/bounty delivery
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
+using Random = System.Random;
 
 namespace OuterRim
 {
@@ -10,108 +11,89 @@ namespace OuterRim
     {
         public static GameManager Instance { get; private set; }
 
-        [Header("Win Condition")][SerializeField] private int fameRequirement = 10;
-        [Header("Credits")][SerializeField] private int creditsFromResting = 2000;
-        [SerializeField] private int defeatedCreditPenalty = 3000;
-
-        // Set to true before starting host for single-player testing
-        private bool soloMode = false;
-        public void EnableSoloMode() => soloMode = true;
-
-        private NetworkVariable<GamePhase> currentPhase = new(GamePhase.WaitingForPlayers);
-        private NetworkVariable<int> currentPlayerIndex = new(0);
-        private NetworkVariable<int> turnNumber = new(1);
-        private NetworkVariable<int> fameRequirementNet = new(10);
+        [Header("Setup")]
+        [SerializeField] private List<PlayerState> playerOrder;
+        [SerializeField] private int creditsFromResting = 2000;
 
         private List<PlayerState> turnOrder = new();
-        private bool planningResolved = false;
-        private System.Random rng;
+        private bool soloMode;
+
+        [Header("Networked State")]
+        private NetworkVariable<GamePhase> currentPhase = new(GamePhase.WaitingForPlayers,
+            writePerm: NetworkVariableWritePermission.Server);
+        private NetworkVariable<int> currentPlayerIndex = new(0);
+        private NetworkVariable<int> turnNumber = new(0);
+        private NetworkVariable<int> fameRequirementNet = new(10);
 
         public GamePhase CurrentPhase => currentPhase.Value;
-        public int CurrentTurnNumber => turnNumber.Value;
         public int FameRequirement => fameRequirementNet.Value;
-        public List<PlayerState> TurnOrder => turnOrder;
-        public System.Action<GamePhase> OnPhaseChanged;
-        public System.Action<PlayerState> OnTurnStarted;
+        public int CurrentTurnNumber => turnNumber.Value;
         public System.Action<ulong, int> OnGameOver;
 
-        private void Awake() { if (Instance == null) Instance = this; else { Destroy(gameObject); return; } rng = new System.Random(); }
+        private bool planningResolved;
+        private System.Random rng = new();
+
+        private void Awake() { if (Instance == null) Instance = this; else Destroy(gameObject); }
 
         public override void OnNetworkSpawn()
         {
-            currentPhase.OnValueChanged += (_, n) => OnPhaseChanged?.Invoke(n);
             if (!IsServer) return;
-            fameRequirementNet.Value = fameRequirement;
-            StartCoroutine(WaitAndStartGame());
-        }
+            if (soloMode)
+            {
+                // Solo: host is the only player
+                var hostPlayer = FindObjectsOfType<PlayerState>().FirstOrDefault(p => p.OwnerClientId == NetworkManager.ServerClientId);
+                if (hostPlayer != null) turnOrder = new List<PlayerState> { hostPlayer };
+            }
+            else
+            {
+                var allPlayers = FindObjectsOfType<PlayerState>();
+                foreach (var p in allPlayers)
+                    if (p.OwnerClientId != 0)
+                        turnOrder.Add(p);
+            }
 
-        private IEnumerator WaitAndStartGame()
-        {
-            int requiredPlayers = soloMode ? 1 : 2;
-            yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClients.Count >= requiredPlayers);
-            yield return new WaitForSeconds(1f);
-            CollectAndOrderPlayers();
+            if (turnOrder.Count == 0) { Debug.LogWarning("[GameManager] No players connected."); return; }
+
+            Shuffle(turnOrder);
+            currentPlayerIndex.Value = 0;
+            turnNumber.Value = 1;
             PatrolManager.Instance?.PlacePatrols();
-            int[] sc = { 4000, 6000, 8000, 10000 };
-            for (int i = 0; i < turnOrder.Count; i++)
-                turnOrder[i].SetStartingCredits(sc[Mathf.Min(i, sc.Length - 1)]);
             TransitionToPhase(GamePhase.PlanningPhase);
         }
 
-        private void CollectAndOrderPlayers()
-        {
-            turnOrder.Clear();
-            foreach (var kvp in NetworkManager.Singleton.ConnectedClients)
-            {
-                var obj = kvp.Value.PlayerObject;
-                if (obj != null && obj.TryGetComponent(out PlayerState ps))
-                { ps.CurrentNodeId.Value = 0; turnOrder.Add(ps); }
-                else
-                {
-                    var go = new GameObject($"Player_{kvp.Key}");
-                    var no = go.AddComponent<NetworkObject>();
-                    var newPs = go.AddComponent<PlayerState>();
-                    no.SpawnWithOwnership(kvp.Key);
-                    newPs.CurrentNodeId.Value = 0;
-                    turnOrder.Add(newPs);
-                }
-            }
-            Shuffle(turnOrder);
-            currentPlayerIndex.Value = 0;
-        }
+        public void EnableSoloMode() => soloMode = true;
 
-        private void TransitionToPhase(GamePhase next)
+        public void TransitionToPhase(GamePhase p)
         {
             if (!IsServer) return;
             planningResolved = false;
-            currentPhase.Value = next;
-            var ap = GetActivePlayer();
+            currentPhase.Value = p;
 
-            if (next == GamePhase.PlanningPhase && ap != null && ap.IsDefeated.Value)
-            { ap.RecoverAllDamage(); ap.StandUp(); AdvanceTurn(); return; }
-            if (ap == null && next != GamePhase.CheckingWinCondition) return;
-
-            switch (next)
+            switch (p)
             {
-                case GamePhase.PlanningPhase:
-                    OnTurnStarted?.Invoke(ap); NotifyPhaseClientRpc(next, ap.OwnerClientId); break;
-                case GamePhase.ActionPhase:
-                    NotifyPhaseClientRpc(next, ap.OwnerClientId); break;
                 case GamePhase.EncounterPhase:
-                    NotifyPhaseClientRpc(next, ap.OwnerClientId);
-                    if (EncounterResolver.Instance != null) EncounterResolver.Instance.ResolveEncounter(ap);
+                    var ap = GetActivePlayer();
+                    if (ap == null) { AdvanceTurn(); return; }
+                    var en = EncounterResolver.Instance;
+                    if (en != null)
+                    {
+                        en.ResolveEncounter(ap);
+                        return;
+                    }
+                    NotifyEncounterComplete();
                     break;
-                case GamePhase.CheckingWinCondition: CheckWinCondition(); break;
+
+                case GamePhase.CheckingWinCondition:
+                    CheckWinCondition();
+                    break;
             }
         }
 
-        [ClientRpc] private void NotifyPhaseClientRpc(GamePhase p, ulong id) => OnPhaseChanged?.Invoke(p);
-
         // ─── PLANNING ────────────────────────────────────────────────────────
         [ServerRpc(RequireOwnership = false)]
-        public void SubmitPlanningChoiceServerRpc(PlanningChoice c, ServerRpcParams p = default)
+        public void SubmitPlanningChoiceServerRpc(PlanningChoice c, ServerRpcParams rpcParams = default)
         {
-            if (!ValidateActive(p.Receive.SenderClientId)) return;
+            if (!ValidateActive(rpcParams.Receive.SenderClientId)) return;
             if (currentPhase.Value != GamePhase.PlanningPhase || planningResolved) return;
             var ap = GetActivePlayer();
             if (ap.IsDefeated.Value && c != PlanningChoice.RecoverDamage) return;
@@ -126,17 +108,16 @@ namespace OuterRim
 
         // ─── ACTION ──────────────────────────────────────────────────────────
         [ServerRpc(RequireOwnership = false)]
-        public void ConfirmMoveServerRpc(int d, ServerRpcParams p = default)
-        { if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return; var ap = GetActivePlayer(); if (ShipMovement.Instance != null) ShipMovement.Instance.TryMovePlayer(ap, d); }
+        public void ConfirmMoveServerRpc(int d, ServerRpcParams rpcParams = default)
+        { if (!ValidateActive(rpcParams.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return; var ap = GetActivePlayer(); if (ShipMovement.Instance != null) ShipMovement.Instance.TryMovePlayer(ap, d); }
 
         [ServerRpc(RequireOwnership = false)]
-        public void BuyCardServerRpc(MarketDeckType dt, int ri, ServerRpcParams p = default)
+        public void BuyCardServerRpc(MarketDeckType dt, int ri, ServerRpcParams rpcParams = default)
         {
-            if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return;
+            if (!ValidateActive(rpcParams.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return;
             var player = GetActivePlayer();
             var card = DeckManager.Instance?.TryPurchaseCard(player, dt, ri);
             if (card == null) return;
-            // Track inventory by deck type
             switch (dt)
             {
                 case MarketDeckType.Cargo:
@@ -150,43 +131,40 @@ namespace OuterRim
                         player.BountiesHeld.Value++;
                     }
                     break;
-                case MarketDeckType.Gear:
-                    if (player.GearUsed.Value < player.GearSlots.Value)
+                case MarketDeckType.GearAndMod:
+                    if (card is GearCardData && player.GearUsed.Value < player.GearSlots.Value)
                         player.GearUsed.Value++;
-                    break;
-                case MarketDeckType.Mods:
-                    if (player.ModUsed.Value < player.ModSlots.Value)
+                    else if (card is ModCardData && player.ModUsed.Value < player.ModSlots.Value)
                         player.ModUsed.Value++;
                     break;
             }
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void CycleCardServerRpc(MarketDeckType dt, int ri, ServerRpcParams p = default)
+        public void CycleCardServerRpc(MarketDeckType dt, int ri, ServerRpcParams rpcParams = default)
         {
-            if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return;
+            if (!ValidateActive(rpcParams.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return;
             DeckManager.Instance?.TryCycleCard(GetActivePlayer(), dt, ri);
-            // Move all active patrols after market search (rulebook §4.3)
             if (PatrolManager.Instance != null)
-                foreach (var p in PatrolManager.Instance.GetAllPatrols())
-                    PatrolManager.Instance.MovePatrol(p);
+                foreach (var pat in PatrolManager.Instance.GetAllPatrols())
+                    PatrolManager.Instance.MovePatrol(pat);
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void DeliverCargoServerRpc(int id, ServerRpcParams p = default)
+        public void DeliverCargoServerRpc(int id, ServerRpcParams rpcParams = default)
         {
-            if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return;
+            if (!ValidateActive(rpcParams.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return;
             var ap = GetActivePlayer();
-            if (ap.CargoUsed.Value <= ap.BountiesHeld.Value) return; // No non-bounty cargo to deliver
+            if (ap.CargoUsed.Value <= ap.BountiesHeld.Value) return;
             ap.CargoUsed.Value--;
             ap.AddCredits(2000);
             ap.AddFame(1);
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void CompleteBountyServerRpc(int id, ServerRpcParams p = default)
+        public void CompleteBountyServerRpc(int id, ServerRpcParams rpcParams = default)
         {
-            if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return;
+            if (!ValidateActive(rpcParams.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return;
             var ap = GetActivePlayer();
             if (ap.BountiesHeld.Value <= 0) return;
             ap.BountiesHeld.Value--;
@@ -196,10 +174,10 @@ namespace OuterRim
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void TradeCreditsServerRpc(ulong t, int a, ServerRpcParams p = default)
+        public void TradeCreditsServerRpc(ulong t, int a, ServerRpcParams rpcParams = default)
         {
-            if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase || a <= 0) return;
-            var from = GetPlayerByClient(p.Receive.SenderClientId);
+            if (!ValidateActive(rpcParams.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase || a <= 0) return;
+            var from = GetPlayerByClient(rpcParams.Receive.SenderClientId);
             var to = GetPlayerByClient(t);
             if (from == null || to == null || from == to || from.CurrentNodeId.Value != to.CurrentNodeId.Value) return;
             if (!from.SpendCredits(a)) return;
@@ -207,8 +185,8 @@ namespace OuterRim
         }
 
         [ServerRpc(RequireOwnership = false)]
-        public void EndActionPhaseServerRpc(ServerRpcParams p = default)
-        { if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return; TransitionToPhase(GamePhase.EncounterPhase); }
+        public void EndActionPhaseServerRpc(ServerRpcParams rpcParams = default)
+        { if (!ValidateActive(rpcParams.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return; TransitionToPhase(GamePhase.EncounterPhase); }
 
         public void NotifyEncounterComplete()
         { if (!IsServer || currentPhase.Value != GamePhase.EncounterPhase) return; TransitionToPhase(GamePhase.CheckingWinCondition); }
@@ -219,10 +197,10 @@ namespace OuterRim
         public PlayerState GetActivePlayer()
         { if (turnOrder.Count == 0) return null; int i = currentPlayerIndex.Value; return i >= 0 && i < turnOrder.Count ? turnOrder[i] : null; }
 
-        public PlayerState GetPlayerByClient(ulong id) { foreach (var p in turnOrder) if (p.OwnerClientId == id) return p; return null; }
+        public PlayerState GetPlayerByClient(ulong id) { foreach (var pl in turnOrder) if (pl.OwnerClientId == id) return pl; return null; }
 
         private void CheckWinCondition()
-        { if (!IsServer) return; foreach (var p in turnOrder) if (p.Fame.Value >= fameRequirementNet.Value) { currentPhase.Value = GamePhase.GameOver; OnGameOver?.Invoke(p.OwnerClientId, p.Fame.Value); return; } AdvanceTurn(); }
+        { if (!IsServer) return; foreach (var pl in turnOrder) if (pl.Fame.Value >= fameRequirementNet.Value) { currentPhase.Value = GamePhase.GameOver; OnGameOver?.Invoke(pl.OwnerClientId, pl.Fame.Value); return; } AdvanceTurn(); }
 
         private bool ValidateActive(ulong id) { if (!IsServer) return false; var a = GetActivePlayer(); return a != null && a.OwnerClientId == id; }
         private void Shuffle<T>(List<T> l) { int n = l.Count; while (n > 1) { n--; int k = rng.Next(n + 1); (l[k], l[n]) = (l[n], l[k]); } }
