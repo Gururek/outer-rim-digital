@@ -291,7 +291,7 @@ namespace OuterRim
                 btnRecover.gameObject.SetActive(true);
                 btnRecover.GetComponentInChildren<Text>().text = "START HOST";
                 btnRecover.onClick.RemoveAllListeners();
-                btnRecover.onClick.AddListener(() => FindObjectOfType<NetworkBootstrapper>()?.StartHost());
+                btnRecover.onClick.AddListener(() => FindObjectOfType<NetworkBootstrapper>()?.StartSolo());
                 btnRecover.interactable = true;
 
                 btnGainCredits.gameObject.SetActive(true);

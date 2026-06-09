@@ -91,6 +91,36 @@ namespace OuterRim
             }
         }
 
+        public void StartSolo()
+        {
+            // Solo mode: skip Unity Relay/Lobby, start local host immediately.
+            // The transport keeps its default localhost binding.
+            try
+            {
+                if (NetworkManager.Singleton == null)
+                {
+                    Debug.LogError("[NetworkBootstrapper] No NetworkManager found.");
+                    return;
+                }
+
+                if (NetworkManager.Singleton.NetworkConfig.NetworkTransport == null)
+                    NetworkManager.Singleton.NetworkConfig.NetworkTransport = transport;
+
+                // Tell GameManager we're solo so it starts with 1 player
+                if (GameManager.Instance != null)
+                    GameManager.Instance.EnableSoloMode();
+
+                EnsurePlayerPrefab();
+
+                NetworkManager.Singleton.StartHost();
+                Debug.Log("[NetworkBootstrapper] Solo host started (local only).");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[NetworkBootstrapper] StartSolo failed: {ex}");
+            }
+        }
+
         public async void StartClient(string joinCode = null)
         {
             try

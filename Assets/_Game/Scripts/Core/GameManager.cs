@@ -14,6 +14,10 @@ namespace OuterRim
         [Header("Credits")][SerializeField] private int creditsFromResting = 2000;
         [SerializeField] private int defeatedCreditPenalty = 3000;
 
+        // Set to true before starting host for single-player testing
+        private bool soloMode = false;
+        public void EnableSoloMode() => soloMode = true;
+
         private NetworkVariable<GamePhase> currentPhase = new(GamePhase.WaitingForPlayers);
         private NetworkVariable<int> currentPlayerIndex = new(0);
         private NetworkVariable<int> turnNumber = new(1);
@@ -43,7 +47,8 @@ namespace OuterRim
 
         private IEnumerator WaitAndStartGame()
         {
-            yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClients.Count >= 2);
+            int requiredPlayers = soloMode ? 1 : 2;
+            yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClients.Count >= requiredPlayers);
             yield return new WaitForSeconds(1f);
             CollectAndOrderPlayers();
             int[] sc = { 4000, 6000, 8000, 10000 };
