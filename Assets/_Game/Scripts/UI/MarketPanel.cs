@@ -11,6 +11,7 @@ namespace OuterRim
     {
         private Canvas canvas;
         private PlayerState localPlayer;
+        private bool uiCreated;
 
         // Per-deck UI elements
         private struct DeckColumn
@@ -26,17 +27,21 @@ namespace OuterRim
 
         private void Start()
         {
-            CreatePanel();
+            // Don't create UI until needed — avoids covering screen at startup
+            canvas = gameObject.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 91;
+            canvas.enabled = false; // Hidden until in-game
+            gameObject.AddComponent<CanvasScaler>().referenceResolution = new Vector2(1920, 1080);
+            gameObject.AddComponent<GraphicRaycaster>();
+
             InvokeRepeating(nameof(Refresh), 0.5f, 0.5f);
         }
 
         private void CreatePanel()
         {
-            canvas = gameObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 91;
-            gameObject.AddComponent<CanvasScaler>().referenceResolution = new Vector2(1920, 1080);
-            gameObject.AddComponent<GraphicRaycaster>();
+            if (uiCreated) return;
+            uiCreated = true;
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
@@ -110,13 +115,13 @@ namespace OuterRim
                 var costTxt = CreateLabel("", root.transform, new Vector2(x, 0.42f), font, 10, Color.yellow);
                 costTxt.alignment = TextAnchor.MiddleCenter;
 
-                // Buy button (invisible, overlaid on card area)
+                // Buy button
                 var buyBtn = cardBtnGo.AddComponent<Button>();
                 buyBtn.targetGraphic = cardImg;
                 var buyColors = buyBtn.colors;
                 buyColors.highlightedColor = new Color(0.25f, 0.25f, 0.4f, 0.9f);
                 buyBtn.colors = buyColors;
-                var dt = type; // capture for closure
+                var dt = type;
                 buyBtn.onClick.AddListener(() => OnBuyClicked(dt, 0));
 
                 // Cycle button (small)
@@ -126,15 +131,14 @@ namespace OuterRim
                 var cycleImg = cycleBtnGo.AddComponent<Image>();
                 cycleImg.color = new Color(0.2f, 0.2f, 0.15f, 0.8f);
 
-                var cycleTxt = CreateLabel("↻ 200cr", root.transform, new Vector2(x, 0.28f), font, 9, Color.gray);
-                cycleTxt.alignment = TextAnchor.MiddleCenter;
+                CreateLabel("↻ 200cr", root.transform, new Vector2(x, 0.28f), font, 9, Color.gray).alignment = TextAnchor.MiddleCenter;
 
                 var cycleBtn = cycleBtnGo.AddComponent<Button>();
                 cycleBtn.targetGraphic = cycleImg;
                 var cycleColors = cycleBtn.colors;
                 cycleColors.highlightedColor = new Color(0.3f, 0.3f, 0.2f, 0.8f);
                 cycleBtn.colors = cycleColors;
-                var ct = type; // capture for closure
+                var ct = type;
                 cycleBtn.onClick.AddListener(() => OnCycleClicked(ct, 0));
 
                 columns[i] = new DeckColumn
@@ -147,9 +151,6 @@ namespace OuterRim
                     CycleButton = cycleBtn,
                 };
             }
-
-            // Store status text reference
-            var stRef = statusTxt;
         }
 
         private void OnBuyClicked(MarketDeckType deckType, int rowIndex)
@@ -170,7 +171,11 @@ namespace OuterRim
 
         private void Refresh()
         {
-            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient) return;
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient)
+            {
+                canvas.enabled = false;
+                return;
+            }
 
             if (localPlayer == null)
             {
@@ -180,14 +185,21 @@ namespace OuterRim
 
             var dm = DeckManager.Instance;
             var gm = GameManager.Instance;
-            if (dm == null || gm == null || columns == null) return;
+            if (dm == null || gm == null || columns == null)
+            {
+                canvas.enabled = false;
+                return;
+            }
 
             bool isActionPhase = gm.CurrentPhase == GamePhase.ActionPhase;
             bool isMyTurn = gm.GetActivePlayer()?.OwnerClientId == NetworkManager.Singleton.LocalClientId;
 
-            gameObject.SetActive(isActionPhase && isMyTurn);
+            canvas.enabled = isActionPhase && isMyTurn;
 
             if (!isActionPhase || !isMyTurn) return;
+
+            // Create UI elements lazily on first valid frame
+            CreatePanel();
 
             int playerCredits = localPlayer != null ? localPlayer.Credits.Value : 0;
 

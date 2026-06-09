@@ -34,6 +34,7 @@ namespace OuterRim
         private void Start()
         {
             CreateHUD();
+            canvas.enabled = false; // Hidden until game is connected
             InvokeRepeating(nameof(RefreshDisplay), 0.2f, 0.3f);
         }
 
@@ -126,7 +127,13 @@ namespace OuterRim
 
         private void RefreshDisplay()
         {
-            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient) return;
+            if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient)
+            {
+                canvas.enabled = false;
+                return;
+            }
+
+            canvas.enabled = true;
 
             // Find local player
             if (localPlayer == null)
