@@ -96,6 +96,11 @@ namespace OuterRim
             var uiGo = new GameObject("GameUIManager");
             uiGo.AddComponent<GameUIManager>();
 
+            // EventSystem — required for UI button clicks
+            var esGo = new GameObject("EventSystem");
+            esGo.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            esGo.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+
             // Map
             var mapParent = new GameObject("Map");
             MapBuilder.BuildNodes(mapParent.transform);
