@@ -14,6 +14,8 @@ namespace OuterRim
 
         // Contact tokens: nodeId -> databank card number
         private Dictionary<int, int> contactTokens = new();
+        // Visual markers for contact tokens: nodeId -> GameObject
+        private Dictionary<int, GameObject> tokenVisuals = new();
 
         private void Awake()
         {
@@ -33,6 +35,11 @@ namespace OuterRim
         private void PlaceContactTokens()
         {
             contactTokens.Clear();
+            // Destroy any existing visuals
+            foreach (var kvp in tokenVisuals)
+                if (kvp.Value != null) Destroy(kvp.Value);
+            tokenVisuals.Clear();
+
             if (MapManager.Instance == null || DataBankManager.Instance == null) return;
 
             // Place one contact per faction from the databank
@@ -50,8 +57,18 @@ namespace OuterRim
                 if (planetNodes.Count > 0)
                 {
                     int planetId = planetNodes[Random.Range(0, planetNodes.Count)];
-                    int cardNum = cards[Random.Range(0, cards.Count)].CardNumber;
-                    contactTokens[planetId] = cardNum;
+                    var card = cards[Random.Range(0, cards.Count)];
+                    contactTokens[planetId] = card.CardNumber;
+
+                    // Create visual token on the planet
+                    var planetNode = MapManager.Instance.nodeLookup.TryGetValue(planetId, out var n) ? n : null;
+                    if (planetNode != null)
+                    {
+                        var tokenGo = new GameObject($"ContactToken_{card.CardNumber}");
+                        var tokenVis = tokenGo.AddComponent<ContactTokenVisual>();
+                        tokenVis.Initialize(card.CardNumber, card.ContactClass, planetNode.transform);
+                        tokenVisuals[planetId] = tokenGo;
+                    }
                 }
             }
             Debug.Log($"[Encounter] Placed {contactTokens.Count} contact tokens.");
@@ -85,6 +102,19 @@ namespace OuterRim
             {
                 int cardNum = contactTokens[node.NodeId];
                 contactTokens.Remove(node.NodeId);
+
+                // Remove visual token
+                if (tokenVisuals.TryGetValue(node.NodeId, out var visGo))
+                {
+                    if (visGo != null)
+                    {
+                        var vis = visGo.GetComponent<ContactTokenVisual>();
+                        if (vis != null) { vis.Reveal(); Destroy(visGo, 2f); }
+                        else Destroy(visGo);
+                    }
+                    tokenVisuals.Remove(node.NodeId);
+                }
+
                 var card = DataBankManager.Instance?.GetCard(cardNum);
                 player.AddCredits(card?.BountyReward ?? 1000);
                 player.AddFame(1);

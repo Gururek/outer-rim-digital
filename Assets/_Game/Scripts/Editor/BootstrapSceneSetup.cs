@@ -83,32 +83,8 @@ namespace OuterRim
         }
 
             // ShipMovement
-        // Phase 2: Visual systems
-        {
-            var hrGo = new GameObject("HyperspaceLaneRenderer");
-            hrGo.transform.SetParent(mapGo.transform);
-            hrGo.AddComponent<HyperspaceLaneRenderer>();
-        }
-        {
-            var svmGo = new GameObject("ShipVisualManager");
-            svmGo.AddComponent<Unity.Netcode.NetworkObject>();
-            svmGo.AddComponent<ShipVisualManager>();
-        }
-
             var smGo = new GameObject("ShipMovement");
             smGo.AddComponent<Unity.Netcode.NetworkObject>();
-        // Phase 2: Visual systems
-        {
-            var hrGo = new GameObject("HyperspaceLaneRenderer");
-            hrGo.transform.SetParent(mapGo.transform);
-            hrGo.AddComponent<HyperspaceLaneRenderer>();
-        }
-        {
-            var svmGo = new GameObject("ShipVisualManager");
-            svmGo.AddComponent<Unity.Netcode.NetworkObject>();
-            svmGo.AddComponent<ShipVisualManager>();
-        }
-
             smGo.AddComponent<ShipMovement>();
 
             // CombatResolver
@@ -119,6 +95,14 @@ namespace OuterRim
             // DebugGameUI
             var uiGo = new GameObject("DebugGameUI");
             uiGo.AddComponent<DebugGameUI>();
+
+            // GameHUD — canvas-based overlay
+            var hudGo = new GameObject("GameHUD");
+            hudGo.AddComponent<GameHUD>();
+
+            // MarketPanel — market card display
+            var marketGo = new GameObject("MarketPanel");
+            marketGo.AddComponent<MarketPanel>();
 
             // Map
             var mapParent = new GameObject("Map");
