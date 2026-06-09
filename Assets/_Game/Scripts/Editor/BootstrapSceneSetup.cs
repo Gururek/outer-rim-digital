@@ -57,11 +57,11 @@ namespace OuterRim
             var deckGo = new GameObject("DeckManager");
             deckGo.AddComponent<DeckManager>();
 
-            // DataBankManager (V2: new)
+            // DataBankManager
             var dbGo = new GameObject("DataBankManager");
             dbGo.AddComponent<DataBankManager>();
 
-            // PatrolManager (V2: new)
+            // PatrolManager
             var patrolGo = new GameObject("PatrolManager");
             patrolGo.AddComponent<PatrolManager>();
 
@@ -70,17 +70,17 @@ namespace OuterRim
             encGo.AddComponent<Unity.Netcode.NetworkObject>();
             encGo.AddComponent<EncounterResolver>();
 
-        // Phase 2: Visual systems
-        {
-            var hrGo = new GameObject("HyperspaceLaneRenderer");
-            hrGo.transform.SetParent(mapGo.transform);
-            hrGo.AddComponent<HyperspaceLaneRenderer>();
-        }
-        {
-            var svmGo = new GameObject("ShipVisualManager");
-            svmGo.AddComponent<Unity.Netcode.NetworkObject>();
-            svmGo.AddComponent<ShipVisualManager>();
-        }
+            // Visual systems
+            {
+                var hrGo = new GameObject("HyperspaceLaneRenderer");
+                hrGo.transform.SetParent(mapGo.transform);
+                hrGo.AddComponent<HyperspaceLaneRenderer>();
+            }
+            {
+                var svmGo = new GameObject("ShipVisualManager");
+                svmGo.AddComponent<Unity.Netcode.NetworkObject>();
+                svmGo.AddComponent<ShipVisualManager>();
+            }
 
             // ShipMovement
             var smGo = new GameObject("ShipMovement");
@@ -92,17 +92,9 @@ namespace OuterRim
             crGo.AddComponent<Unity.Netcode.NetworkObject>();
             crGo.AddComponent<CombatResolver>();
 
-            // DebugGameUI
-            var uiGo = new GameObject("DebugGameUI");
-            uiGo.AddComponent<DebugGameUI>();
-
-            // GameHUD — canvas-based overlay
-            var hudGo = new GameObject("GameHUD");
-            hudGo.AddComponent<GameHUD>();
-
-            // MarketPanel — market card display
-            var marketGo = new GameObject("MarketPanel");
-            marketGo.AddComponent<MarketPanel>();
+            // GameUIManager — unified canvas UI (replaces DebugGameUI + GameHUD + MarketPanel)
+            var uiGo = new GameObject("GameUIManager");
+            uiGo.AddComponent<GameUIManager>();
 
             // Map
             var mapParent = new GameObject("Map");
@@ -115,7 +107,7 @@ namespace OuterRim
             EditorBuildSettings.scenes = list.ToArray();
 
             EditorSceneManager.SaveScene(scene, "Assets/_Game/Scenes/Bootstrap.unity");
-            Debug.Log("[Bootstrap] V2 scene created with DataBankManager + PatrolManager.");
+            Debug.Log("[Bootstrap] V2 scene created with GameUIManager (unified UI).");
         }
     }
 }
