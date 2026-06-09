@@ -59,21 +59,42 @@ namespace OuterRim
 
         private void InitializeDecks()
         {
+            // Fallback: if SO lists are empty, use stub data for development
+            var bountyList   = bountyCards != null && bountyCards.Count > 0   ? bountyCards.Cast<CardData>().ToList() : StubCardDatabase.GetBountyCards();
+            var cargoList    = cargoCards != null && cargoCards.Count > 0    ? cargoCards.Cast<CardData>().ToList() : StubCardDatabase.GetCargoCards();
+            var gearModList  = gearAndModCards != null && gearAndModCards.Count > 0 ? gearAndModCards : StubCardDatabase.GetGearCards();
+            var jobList      = jobCards != null && jobCards.Count > 0       ? jobCards.Cast<CardData>().ToList() : StubCardDatabase.GetJobCards();
+            var luxuryList   = luxuryCards != null && luxuryCards.Count > 0  ? luxuryCards.Cast<CardData>().ToList() : StubCardDatabase.GetLuxuryCards();
+            var shipList     = shipCards != null && shipCards.Count > 0     ? shipCards.Cast<CardData>().ToList() : new List<CardData>();
+
             marketDecks = new()
             {
-                [MarketDeckType.Bounty]     = CreateDeck(MarketDeckType.Bounty, bountyCards.Cast<CardData>().ToList()),
-                [MarketDeckType.Cargo]      = CreateDeck(MarketDeckType.Cargo, cargoCards.Cast<CardData>().ToList()),
-                [MarketDeckType.GearAndMod] = CreateDeck(MarketDeckType.GearAndMod, gearAndModCards),
-                [MarketDeckType.Job]        = CreateDeck(MarketDeckType.Job, jobCards.Cast<CardData>().ToList()),
-                [MarketDeckType.Luxury]     = CreateDeck(MarketDeckType.Luxury, luxuryCards.Cast<CardData>().ToList()),
-                [MarketDeckType.Ship]       = CreateDeck(MarketDeckType.Ship, shipCards.Cast<CardData>().ToList()),
+                [MarketDeckType.Bounty]     = CreateDeck(MarketDeckType.Bounty, bountyList),
+                [MarketDeckType.Cargo]      = CreateDeck(MarketDeckType.Cargo, cargoList),
+                [MarketDeckType.GearAndMod] = CreateDeck(MarketDeckType.GearAndMod, gearModList),
+                [MarketDeckType.Job]        = CreateDeck(MarketDeckType.Job, jobList),
+                [MarketDeckType.Luxury]     = CreateDeck(MarketDeckType.Luxury, luxuryList),
+                [MarketDeckType.Ship]       = CreateDeck(MarketDeckType.Ship, shipList),
             };
 
             planetEncounterDecks = new();
-            foreach (var g in encounterCards.Where(c => c != null && !string.IsNullOrEmpty(c.PlanetId)).GroupBy(c => c.PlanetId))
+            if (encounterCards != null && encounterCards.Count > 0)
             {
-                var list = g.ToList(); Shuffle(list);
-                planetEncounterDecks[g.Key] = new Queue<EncounterCardData>(list);
+                foreach (var g in encounterCards.Where(c => c != null && !string.IsNullOrEmpty(c.PlanetId)).GroupBy(c => c.PlanetId))
+                {
+                    var list = g.ToList(); Shuffle(list);
+                    planetEncounterDecks[g.Key] = new Queue<EncounterCardData>(list);
+                }
+            }
+            else
+            {
+                // Fallback: use stub encounter cards grouped by planet
+                var stubs = StubCardDatabase.GetStubEncounters();
+                foreach (var g in stubs.Where(c => c != null && !string.IsNullOrEmpty(c.PlanetId)).GroupBy(c => c.PlanetId))
+                {
+                    var list = g.ToList(); Shuffle(list);
+                    planetEncounterDecks[g.Key] = new Queue<EncounterCardData>(list);
+                }
             }
 
             Debug.Log("[DeckManager] V2: 6 market decks initialized.");

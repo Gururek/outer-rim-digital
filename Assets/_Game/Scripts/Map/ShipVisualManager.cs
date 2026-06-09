@@ -136,6 +136,15 @@ namespace OuterRim
             StartCoroutine(MoveShipCoroutine(go, node.transform.position + Vector3.up * shipYOffset));
         }
 
+        public void RemovePatrolVisual(int patrolId)
+        {
+            if (patrolVisuals.TryGetValue(patrolId, out var go))
+            {
+                if (go != null) Destroy(go);
+                patrolVisuals.Remove(patrolId);
+            }
+        }
+
         private System.Collections.IEnumerator MoveShipCoroutine(GameObject ship, Vector3 target)
         {
             Vector3 start = ship.transform.position;

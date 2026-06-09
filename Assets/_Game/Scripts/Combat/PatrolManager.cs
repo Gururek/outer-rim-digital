@@ -90,6 +90,9 @@ namespace OuterRim
                         IsDefeated = false
                     };
                     activePatrols.Add(patrol);
+
+                    // Spawn visual
+                    ShipVisualManager.Instance?.SpawnPatrolVisual(patrol.PatrolId, patrol.CurrentNodeId, faction);
                 }
             }
 
@@ -135,6 +138,9 @@ namespace OuterRim
             player.AddFame(patrol.FameReward);
             player.SetReputation(patrol.Faction, ReputationStatus.Negative);
 
+            // Remove visual for defeated patrol
+            ShipVisualManager.Instance?.RemovePatrolVisual(patrol.PatrolId);
+
             Debug.Log($"[PatrolManager] Patrol {patrol.PatrolId} ({patrol.Faction} L{patrol.Level}) defeated by Player {player.OwnerClientId}");
 
             // Spawn replacement patrol at a random faction navpoint
@@ -155,6 +161,10 @@ namespace OuterRim
                 CurrentNodeId = nodeId
             };
             activePatrols.Add(newPatrol);
+
+            // Spawn visual for replacement patrol
+            ShipVisualManager.Instance?.SpawnPatrolVisual(newPatrol.PatrolId, nodeId, faction);
+
             Debug.Log($"[PatrolManager] Spawned replacement patrol {newPatrol.PatrolId} ({faction} L{level}) at node {nodeId}");
         }
 
@@ -175,6 +185,7 @@ namespace OuterRim
             {
                 int dest = candidates[Random.Range(0, candidates.Count)];
                 patrol.CurrentNodeId = dest;
+                ShipVisualManager.Instance?.MovePatrolVisual(patrol.PatrolId, dest);
                 Debug.Log($"[PatrolManager] Patrol {patrol.PatrolId} moved to node {dest}");
             }
         }

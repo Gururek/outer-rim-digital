@@ -51,6 +51,7 @@ namespace OuterRim
             yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClients.Count >= requiredPlayers);
             yield return new WaitForSeconds(1f);
             CollectAndOrderPlayers();
+            PatrolManager.Instance?.PlacePatrols();
             int[] sc = { 4000, 6000, 8000, 10000 };
             for (int i = 0; i < turnOrder.Count; i++)
                 turnOrder[i].SetStartingCredits(sc[Mathf.Min(i, sc.Length - 1)]);
@@ -162,7 +163,14 @@ namespace OuterRim
 
         [ServerRpc(RequireOwnership = false)]
         public void CycleCardServerRpc(MarketDeckType dt, int ri, ServerRpcParams p = default)
-        { if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return; DeckManager.Instance?.TryCycleCard(GetActivePlayer(), dt, ri); }
+        {
+            if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return;
+            DeckManager.Instance?.TryCycleCard(GetActivePlayer(), dt, ri);
+            // Move all active patrols after market search (rulebook §4.3)
+            if (PatrolManager.Instance != null)
+                foreach (var p in PatrolManager.Instance.GetAllPatrols())
+                    PatrolManager.Instance.MovePatrol(p);
+        }
 
         [ServerRpc(RequireOwnership = false)]
         public void DeliverCargoServerRpc(int id, ServerRpcParams p = default)

@@ -156,5 +156,22 @@ namespace OuterRim
         }
 
         [ServerRpc] private void SetPlayerNameServerRpc(string n) => PlayerName.Value = n;
+
+        // ─── Effective Values (with gear/mod bonuses) ────────────────────────
+        public int GetEffectiveSkill(SkillType skill) => skill switch
+        {
+            SkillType.Influence => InfluenceSkill.Value,
+            SkillType.Strength   => StrengthSkill.Value,
+            SkillType.Knowledge  => KnowledgeSkill.Value,
+            SkillType.Tactics    => TacticsSkill.Value,
+            SkillType.Piloting   => PilotingSkill.Value,
+            SkillType.Stealth    => StealthSkill.Value,
+            SkillType.Tech       => TechSkill.Value,
+            _ => 1
+        };
+        // TODO: add gear/mod bonus once equipment inventory is tracked
+
+        public int GetEffectiveSpeed() => Hyperdrive.Value;
+        // TODO: add speed modifier from ship mods
     }
 }

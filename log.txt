@@ -1,0 +1,42 @@
+[2026-06-07T12:13:31.683Z] [INFO] [Tools] Registering tool: execute_menu_item
+[2026-06-07T12:13:31.684Z] [INFO] [Tools] Registering tool: select_gameobject
+[2026-06-07T12:13:31.684Z] [INFO] [Tools] Registering tool: add_package
+[2026-06-07T12:13:31.684Z] [INFO] [Tools] Registering tool: run_tests
+[2026-06-07T12:13:31.684Z] [INFO] [Tools] Registering tool: send_console_log
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: get_console_logs
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: update_component
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: add_asset_to_scene
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: update_gameobject
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: create_prefab
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: create_scene
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: delete_scene
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: load_scene
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: save_scene
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: get_scene_info
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: unload_scene
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: recompile_scripts
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: get_gameobject
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: move_gameobject
+[2026-06-07T12:13:31.685Z] [INFO] [Tools] Registering tool: rotate_gameobject
+[2026-06-07T12:13:31.686Z] [INFO] [Tools] Registering tool: scale_gameobject
+[2026-06-07T12:13:31.686Z] [INFO] [Tools] Registering tool: set_transform
+[2026-06-07T12:13:31.686Z] [INFO] [Tools] Registering tool: duplicate_gameobject
+[2026-06-07T12:13:31.686Z] [INFO] [Tools] Registering tool: delete_gameobject
+[2026-06-07T12:13:31.686Z] [INFO] [Tools] Registering tool: reparent_gameobject
+[2026-06-07T12:13:31.686Z] [INFO] [Tools] Registering tool: create_material
+[2026-06-07T12:13:31.686Z] [INFO] [Tools] Registering tool: assign_material
+[2026-06-07T12:13:31.686Z] [INFO] [Tools] Registering tool: modify_material
+[2026-06-07T12:13:31.686Z] [INFO] [Tools] Registering tool: get_material_info
+[2026-06-07T12:13:31.686Z] [INFO] [Tools] Registering tool: batch_execute
+[2026-06-07T12:13:31.686Z] [INFO] [Resources] Registering resource: get_tests
+[2026-06-07T12:13:31.686Z] [INFO] [Resources] Registering resource: get_gameobject
+[2026-06-07T12:13:31.686Z] [INFO] [Resources] Registering resource: get_menu_items
+[2026-06-07T12:13:31.687Z] [INFO] [Resources] Registering resource: get_console_logs
+[2026-06-07T12:13:31.687Z] [INFO] [Resources] Registering resource: get_scenes_hierarchy
+[2026-06-07T12:13:31.687Z] [INFO] [Resources] Registering resource: get_packages
+[2026-06-07T12:13:31.687Z] [INFO] [Resources] Registering resource: get_assets
+[2026-06-07T12:13:31.687Z] [INFO] [Server] MCP Server started
+[2026-06-07T12:13:31.687Z] [INFO] [Server] Connected MCP client: Unknown MCP Client
+[2026-06-07T12:13:31.687Z] [INFO] [Unity] Attempting to read startup parameters...
+[2026-06-07T12:13:31.688Z] [INFO] [Server] Shutting down...
+[2026-06-07T12:13:31.688Z] [INFO] [Unity] Unity WebSocket client stopped
