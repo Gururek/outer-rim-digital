@@ -7,6 +7,9 @@ using System.Collections.Generic;
 
 namespace OuterRim
 {
+    [RequireComponent(typeof(Canvas))]
+    [RequireComponent(typeof(CanvasScaler))]
+    [RequireComponent(typeof(GraphicRaycaster))]
     public class GameUIManager : MonoBehaviour
     {
         private Canvas canvas;
@@ -41,16 +44,20 @@ namespace OuterRim
         private string statusMsg = "";
         private float statusTimer = 0f;
 
-        private void Start()
+        private void Awake()
         {
-            canvas = gameObject.AddComponent<Canvas>();
+            canvas = GetComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 100;
             canvas.enabled = false;
-            gameObject.AddComponent<CanvasScaler>().referenceResolution = new Vector2(1920, 1080);
-            gameObject.AddComponent<GraphicRaycaster>();
 
-            InvokeRepeating(nameof(Refresh), 0.3f, 0.25f);
+            var scaler = GetComponent<CanvasScaler>();
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = 0.5f;
+
+            // GraphicRaycaster is auto-added by RequireComponent
+            InvokeRepeating(nameof(Refresh), 0.1f, 0.25f);
         }
 
         private void CreateUI()
