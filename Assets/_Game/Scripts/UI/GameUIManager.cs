@@ -262,12 +262,66 @@ namespace OuterRim
         // ═════════════════════════════════════════════════════════════════════
         private void Refresh()
         {
+            // Always create UI on first frame
+            if (!uiCreated) CreateUI();
+
             var net = NetworkManager.Singleton;
-            if (net == null || !net.IsConnectedClient)
+            bool connected = net != null && net.IsConnectedClient;
+            canvas.enabled = true; // Always show UI
+
+            if (!connected)
             {
-                canvas.enabled = false;
+                // Offline state — show host/join controls
+                fameText.text = "★ 0/10";
+                creditsText.text = "$ 0cr";
+                phaseText.text = "OFFLINE";
+                phaseText.color = Color.gray;
+                turnText.text = "Not connected";
+
+                leftPanel.SetActive(true);
+                // Hide all action elements, show host/join
+                btnMoveShip.gameObject.SetActive(false);
+                btnRecover.gameObject.SetActive(true);
+                btnRecover.GetComponentInChildren<Text>().text = "START HOST";
+                btnRecover.onClick.RemoveAllListeners();
+                btnRecover.onClick.AddListener(() => FindObjectOfType<NetworkBootstrapper>()?.StartHost());
+                btnRecover.interactable = true;
+
+                btnGainCredits.gameObject.SetActive(true);
+                btnGainCredits.GetComponentInChildren<Text>().text = "JOIN GAME";
+                btnGainCredits.onClick.RemoveAllListeners();
+                btnGainCredits.onClick.AddListener(() => FindObjectOfType<NetworkBootstrapper>()?.StartClient(""));
+                btnGainCredits.interactable = true;
+
+                // Hide action elements
+                moveGroup.SetActive(false);
+                btnBuyBounty.gameObject.SetActive(false);
+                btnBuyCargo.gameObject.SetActive(false);
+                btnBuyGear.gameObject.SetActive(false);
+                btnBuyJob.gameObject.SetActive(false);
+                btnBuyLuxury.gameObject.SetActive(false);
+                btnBuyShip.gameObject.SetActive(false);
+                btnDeliver.gameObject.SetActive(false);
+                btnBounty.gameObject.SetActive(false);
+                tradeGroup.SetActive(false);
+                btnEndAction.gameObject.SetActive(false);
+
+                // Clear right panel
+                hdText.text = ""; hullText.text = ""; combatText.text = "";
+                cargoText.text = ""; crewText.text = "";
+                huttRepText.text = ""; syndRepText.text = "";
+                impRepText.text = ""; rebelRepText.text = "";
                 return;
             }
+
+            // Connected state — restore button labels
+            btnRecover.GetComponentInChildren<Text>().text = "RECOVER (full heal)";
+            btnRecover.onClick.RemoveAllListeners();
+            btnRecover.onClick.AddListener(() => SubmitPlanning(PlanningChoice.RecoverDamage));
+
+            btnGainCredits.GetComponentInChildren<Text>().text = "GAIN +2000cr";
+            btnGainCredits.onClick.RemoveAllListeners();
+            btnGainCredits.onClick.AddListener(() => SubmitPlanning(PlanningChoice.GainCredits));
 
             // Find local player once
             if (localPlayer == null)
@@ -275,9 +329,6 @@ namespace OuterRim
                 foreach (var ps in FindObjectsOfType<PlayerState>())
                     if (ps.IsOwner) { localPlayer = ps; break; }
             }
-
-            if (!uiCreated) CreateUI();
-            canvas.enabled = true;
 
             var gm = Gm();
             if (gm == null || localPlayer == null) return;
@@ -309,7 +360,6 @@ namespace OuterRim
 
             if (isMyTurn && phase == GamePhase.ActionPhase)
             {
-                // Update market button labels with prices
                 UpdateMarketButtons();
             }
         }
