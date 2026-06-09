@@ -1,0 +1,157 @@
+/*
+2026-06-09 AI-Tag
+This was created with the help of Assistant, a Unity Artificial Intelligence product.
+*/
+/* GameUI.uss — cohesive sci-fi theme for Outer Rim */
+
+.root {
+    flex-grow: 1;
+}
+
+/* ─── Top bar ───────────────────────────────────────────── */
+.top-bar {
+    flex-direction: row;
+    align-items: center;
+    height: 50px;
+    background-color: rgba(10, 14, 26, 0.9);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(51, 204, 255, 0.4);
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+.fame-text {
+    font-size: 22px;
+    color: rgb(255, 204, 51);
+    -unity-font-style: bold;
+}
+
+.phase-text {
+    flex-grow: 1;
+    font-size: 18px;
+    color: rgb(51, 204, 255);
+    -unity-text-align: middle-center;
+}
+
+.turn-text {
+    font-size: 14px;
+    color: rgb(136, 153, 170);
+    margin-right: 24px;
+}
+
+.credits-text {
+    font-size: 22px;
+    color: rgb(102, 255, 153);
+    -unity-font-style: bold;
+}
+
+/* ─── Middle area ───────────────────────────────────────── */
+.middle {
+    flex-grow: 1;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.side-panel {
+    width: 270px;
+    background-color: rgba(10, 14, 26, 0.9);
+    border-width: 1px;
+    border-color: rgba(51, 204, 255, 0.3);
+    border-radius: 10px;
+    margin: 14px;
+    padding: 14px;
+}
+
+.panel-title {
+    font-size: 14px;
+    color: rgb(51, 204, 255);
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.rep-title {
+    margin-top: 14px;
+}
+
+.stat-text {
+    font-size: 14px;
+    color: rgb(200, 212, 224);
+    margin-bottom: 5px;
+}
+
+/* ─── Buttons ───────────────────────────────────────────── */
+.sci-button {
+    height: 36px;
+    margin-top: 6px;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    background-color: rgba(20, 40, 70, 0.92);
+    border-width: 1px;
+    border-color: rgba(51, 204, 255, 0.5);
+    border-radius: 6px;
+    color: rgb(207, 232, 255);
+    font-size: 13px;
+    -unity-font-style: bold;
+    transition-duration: 0.15s;
+}
+
+.sci-button:hover {
+    background-color: rgba(40, 84, 134, 0.95);
+    border-color: rgb(51, 204, 255);
+    color: rgb(255, 255, 255);
+}
+
+.sci-button:disabled {
+    opacity: 0.4;
+}
+
+.end-action-button {
+    margin-top: 12px;
+    background-color: rgba(120, 32, 32, 0.92);
+    border-color: rgba(204, 51, 51, 0.7);
+    color: rgb(255, 210, 210);
+}
+
+.end-action-button:hover {
+    background-color: rgba(180, 46, 46, 0.95);
+    border-color: rgb(204, 51, 51);
+    color: rgb(255, 255, 255);
+}
+
+/* ─── Groups (move / trade) ─────────────────────────────── */
+.group {
+    margin-top: 10px;
+    margin-bottom: 6px;
+    padding: 8px;
+    background-color: rgba(5, 8, 16, 0.6);
+    border-width: 1px;
+    border-color: rgba(51, 204, 255, 0.2);
+    border-radius: 6px;
+}
+
+.group-label {
+    font-size: 12px;
+    color: rgb(136, 153, 170);
+    margin-bottom: 4px;
+}
+
+/* ─── Text fields ───────────────────────────────────────── */
+.sci-input {
+    margin-bottom: 6px;
+}
+
+.sci-input .unity-base-text-field__input {
+    background-color: rgba(5, 8, 16, 0.95);
+    border-width: 1px;
+    border-color: rgba(51, 204, 255, 0.4);
+    border-radius: 4px;
+    color: rgb(255, 255, 255);
+}
+
+.sci-input .unity-base-field__label {
+    color: rgb(136, 153, 170);
+    font-size: 12px;
+    min-width: 28px;
+}

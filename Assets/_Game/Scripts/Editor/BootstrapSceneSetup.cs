@@ -1,4 +1,5 @@
-// BootstrapSceneSetup.cs — V2: creates all manager GameObjects
+// BootstrapSceneSetup.cs — V3: creates all manager GameObjects
+// Force recompile — added using for clarity
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -92,14 +93,15 @@ namespace OuterRim
             crGo.AddComponent<Unity.Netcode.NetworkObject>();
             crGo.AddComponent<CombatResolver>();
 
-            // GameUIManager — unified canvas UI (replaces DebugGameUI + GameHUD + MarketPanel)
+            // GameUIManager — UI Toolkit (UIDocument) unified UI
             var uiGo = new GameObject("GameUIManager");
+            var uiDoc = uiGo.AddComponent<UnityEngine.UIElements.UIDocument>();
+            uiDoc.panelSettings = AssetDatabase.LoadAssetAtPath<UnityEngine.UIElements.PanelSettings>(
+                "Assets/_Game/UI/GameUIPanelSettings.asset");
+            uiDoc.visualTreeAsset = AssetDatabase.LoadAssetAtPath<UnityEngine.UIElements.VisualTreeAsset>(
+                "Assets/_Game/UI/GameUI.uxml");
             uiGo.AddComponent<GameUIManager>();
-
-            // EventSystem — required for UI button clicks
-            var esGo = new GameObject("EventSystem");
-            esGo.AddComponent<UnityEngine.EventSystems.EventSystem>();
-            esGo.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+            // NOTE: UI Toolkit does not require a uGUI EventSystem for input.
 
             // Map
             var mapParent = new GameObject("Map");
@@ -112,7 +114,7 @@ namespace OuterRim
             EditorBuildSettings.scenes = list.ToArray();
 
             EditorSceneManager.SaveScene(scene, "Assets/_Game/Scenes/Bootstrap.unity");
-            Debug.Log("[Bootstrap] V2 scene created with GameUIManager (unified UI).");
+            Debug.Log("[Bootstrap] V3 scene created with GameUIManager (unified UI).");
         }
     }
 }

@@ -28,3 +28,11 @@ To Work On.zip
 To Work On/
 .mcp/node_modules/
 .mcp/unity-relay/
+
+# AI Assistant package bloat (523MB of relay/gateway/runtime binaries)
+Packages/com.unity.ai.assistant/RelayApp~/
+Packages/com.unity.ai.assistant/ThirdParty~/
+
+# Auto-generated Unity artifacts (not authored by hand)
+GeneratedAssets/
+UIElementsSchema/

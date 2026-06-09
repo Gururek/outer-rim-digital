@@ -23,6 +23,7 @@ namespace OuterRim
         [SerializeField] private Color patrolColor = new(1f, 0.3f, 0.3f);
 
         private Dictionary<ulong, GameObject> playerShips = new();
+        private Dictionary<ulong, Vector3> shipBasePositions = new();
         private Dictionary<int, GameObject> patrolVisuals = new();
         private GameObject defaultShipMesh;
 
@@ -92,6 +93,7 @@ namespace OuterRim
             {
                 if (go != null) Destroy(go);
                 playerShips.Remove(clientId);
+                shipBasePositions.Remove(clientId);
             }
         }
 
@@ -101,7 +103,9 @@ namespace OuterRim
             var node = MapManager.Instance?.GetNodeById(nodeId);
             if (node == null) return;
 
-            ship.transform.position = node.transform.position + Vector3.up * shipYOffset;
+            Vector3 basePos = node.transform.position + Vector3.up * shipYOffset;
+            ship.transform.position = basePos;
+            shipBasePositions[clientId] = basePos;
             ship.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
         }
 
@@ -163,13 +167,13 @@ namespace OuterRim
 
         private void Update()
         {
-            // Gentle bobbing animation
+            // Gentle bobbing animation relative to each ship's cached base position
             float bob = Mathf.Sin(Time.time * bobSpeed) * bobHeight;
             foreach (var kvp in playerShips)
             {
                 if (kvp.Value == null) continue;
-                var pos = kvp.Value.transform.position;
-                kvp.Value.transform.position = new Vector3(pos.x, pos.y + bob * 0.3f, pos.z);
+                if (!shipBasePositions.TryGetValue(kvp.Key, out var basePos)) continue;
+                kvp.Value.transform.position = new Vector3(basePos.x, basePos.y + bob, basePos.z);
             }
         }
 

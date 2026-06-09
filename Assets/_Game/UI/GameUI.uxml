@@ -1,0 +1,56 @@
+<!--
+2026-06-09 AI-Tag
+This was created with the help of Assistant, a Unity Artificial Intelligence product.
+-->
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="GameUI.uss" />
+    <ui:VisualElement name="root" class="root">
+        <ui:VisualElement name="top-bar" class="top-bar">
+            <ui:Label name="fame-text" text="★ 0/10" class="fame-text" />
+            <ui:Label name="phase-text" text="OFFLINE" class="phase-text" />
+            <ui:Label name="turn-text" text="Turn 1" class="turn-text" />
+            <ui:Label name="credits-text" text="$ 0cr" class="credits-text" />
+        </ui:VisualElement>
+        <ui:VisualElement name="middle" class="middle">
+            <ui:VisualElement name="left-panel" class="side-panel">
+                <ui:Label text="ACTIONS" class="panel-title" />
+                <ui:Button name="btn-move-ship" text="MOVE SHIP" class="sci-button" />
+                <ui:Button name="btn-recover" text="RECOVER (full heal)" class="sci-button" />
+                <ui:Button name="btn-gain-credits" text="GAIN +2000cr" class="sci-button" />
+                <ui:VisualElement name="move-group" class="group">
+                    <ui:Label text="Move to node:" class="group-label" />
+                    <ui:TextField name="move-node-input" value="0" class="sci-input" />
+                    <ui:Button name="btn-move-confirm" text="GO" class="sci-button" />
+                </ui:VisualElement>
+                <ui:Button name="btn-buy-bounty" text="Buy Bounty" class="sci-button" />
+                <ui:Button name="btn-buy-cargo" text="Buy Cargo" class="sci-button" />
+                <ui:Button name="btn-buy-gear" text="Buy Gear" class="sci-button" />
+                <ui:Button name="btn-buy-job" text="Buy Job" class="sci-button" />
+                <ui:Button name="btn-buy-luxury" text="Buy Luxury" class="sci-button" />
+                <ui:Button name="btn-buy-ship" text="Buy Ship" class="sci-button" />
+                <ui:Button name="btn-deliver" text="DELIVER (+1★)" class="sci-button" />
+                <ui:Button name="btn-bounty" text="BOUNTY (+2★)" class="sci-button" />
+                <ui:VisualElement name="trade-group" class="group">
+                    <ui:Label text="Trade credits:" class="group-label" />
+                    <ui:TextField name="trade-target-input" label="To" value="0" class="sci-input" />
+                    <ui:TextField name="trade-amount-input" label="Cr" value="1000" class="sci-input" />
+                    <ui:Button name="btn-trade-send" text="SEND" class="sci-button" />
+                </ui:VisualElement>
+                <ui:Button name="btn-end-action" text="END ACTION PHASE" class="sci-button end-action-button" />
+            </ui:VisualElement>
+            <ui:VisualElement name="right-panel" class="side-panel">
+                <ui:Label text="SHIP" class="panel-title" />
+                <ui:Label name="hd-text" text="HD: 2" class="stat-text" />
+                <ui:Label name="hull-text" text="Hull: 5/5" class="stat-text" />
+                <ui:Label name="combat-text" text="Combat: 2" class="stat-text" />
+                <ui:Label name="cargo-text" text="Cargo: 0/4" class="stat-text" />
+                <ui:Label name="crew-text" text="Crew: 0/2" class="stat-text" />
+                <ui:Label text="REPUTATION" class="panel-title rep-title" />
+                <ui:Label name="hutt-rep-text" text="Hutt: ■ Neutral" class="stat-text" />
+                <ui:Label name="synd-rep-text" text="Syndicate: ■ Neutral" class="stat-text" />
+                <ui:Label name="imp-rep-text" text="Imperial: ■ Neutral" class="stat-text" />
+                <ui:Label name="rebel-rep-text" text="Rebel: ■ Neutral" class="stat-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
