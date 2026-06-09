@@ -48,7 +48,8 @@ namespace OuterRim
                 playerWon, damageToPlayer, credits, fame);
 
             yield return new WaitForSeconds(2.5f);
-            GameManager.Instance?.NotifyEncounterComplete();
+            // NotifyEncounterComplete is called by EncounterResolver after the full encounter coroutine.
+            // Do NOT call it here — would cause double phase transition.
         }
 
         [ClientRpc]

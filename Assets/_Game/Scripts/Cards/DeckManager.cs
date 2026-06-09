@@ -40,12 +40,21 @@ namespace OuterRim
         private Dictionary<MarketDeckType, MarketDeck> marketDecks;
         private Dictionary<string, Queue<EncounterCardData>> planetEncounterDecks;
 
-        private void Awake() { if (Instance == null) Instance = this; else Destroy(gameObject); }
+        // Client-visible market state: per deck, array of card IDs in market row
+        private NetworkList<MarketRowEntry> clientMarketRows;
+
+        private void Awake()
+        {
+            if (Instance == null) Instance = this; else { Destroy(gameObject); return; }
+            clientMarketRows = new NetworkList<MarketRowEntry>();
+        }
 
         public override void OnNetworkSpawn()
         {
+            clientMarketRows.OnListChanged += OnClientMarketRowsChanged;
             if (!IsServer) return;
             InitializeDecks();
+            SyncAllMarketRowsToClients();
         }
 
         private void InitializeDecks()
@@ -85,6 +94,7 @@ namespace OuterRim
             var card = deck.MarketRow.ElementAtOrDefault(rowIndex);
             if (card == null || !buyer.SpendCredits(card.BuyCost)) return null;
             deck.PurchaseFromMarket(rowIndex);
+            SyncDeckRowToClients(deckType, deck);
             return card;
         }
 
@@ -92,8 +102,59 @@ namespace OuterRim
         {
             if (!IsServer || !player.SpendCredits(cycleCost)) return null;
             if (!marketDecks.TryGetValue(deckType, out var deck)) return null;
-            return deck.CycleMarketCard(rowIndex);
+            var result = deck.CycleMarketCard(rowIndex);
+            SyncDeckRowToClients(deckType, deck);
+            return result;
         }
+
+        // ─── Client-visible market state ────────────────────────────────────
+
+        /// <summary>Syncs one deck's market row to all clients via NetworkList.</summary>
+        private void SyncDeckRowToClients(MarketDeckType deckType, MarketDeck deck)
+        {
+            if (!IsServer) return;
+            // Remove old entry for this deck type, then add new one
+            for (int i = clientMarketRows.Count - 1; i >= 0; i--)
+                if (clientMarketRows[i].DeckType == deckType)
+                    clientMarketRows.RemoveAt(i);
+            var entry = new MarketRowEntry
+            {
+                DeckType = deckType,
+                CardIds = deck.MarketRow.Select(c => c.CardId).ToArray()
+            };
+            clientMarketRows.Add(entry);
+        }
+
+        private void SyncAllMarketRowsToClients()
+        {
+            if (!IsServer) return;
+            clientMarketRows.Clear();
+            foreach (var kvp in marketDecks)
+            {
+                var entry = new MarketRowEntry
+                {
+                    DeckType = kvp.Key,
+                    CardIds = kvp.Value.MarketRow.Select(c => c.CardId).ToArray()
+                };
+                clientMarketRows.Add(entry);
+            }
+        }
+
+        /// <summary>Client-side: get the synced card IDs for a deck's market row.</summary>
+        public int[] GetClientMarketRow(MarketDeckType deckType)
+        {
+            foreach (var entry in clientMarketRows)
+                if (entry.DeckType == deckType)
+                    return entry.CardIds;
+            return new int[0];
+        }
+
+        private void OnClientMarketRowsChanged(NetworkListEvent<MarketRowEntry> changeEvent)
+        {
+            // UI can react to market row changes here — GameUIManager polls via GetClientMarketRow
+        }
+
+        public event System.Action OnMarketRowChanged;
 
         public EncounterCardData DrawPlanetEncounterCard(string planetId)
         {

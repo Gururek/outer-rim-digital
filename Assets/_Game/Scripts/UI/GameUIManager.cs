@@ -414,14 +414,16 @@ namespace OuterRim
         {
             var dm = DeckManager.Instance;
             if (dm == null) { btn.interactable = false; return; }
-            var d = dm.GetDeck(deck);
-            if (d == null || d.MarketRow.Count == 0) { btn.interactable = false; return; }
-            var card = d.MarketRow[0];
-            btn.interactable = credits >= card.BuyCost;
-            // Update button text with price
+            // Read synced client-side market row — NOT server-only deck internals
+            int[] row = dm.GetClientMarketRow(deck);
+            if (row == null || row.Length == 0) { btn.interactable = false; return; }
+            btn.interactable = true; // always enable when cards are available (credit check is server-side)
             var txt = btn.GetComponentInChildren<Text>();
             if (txt != null)
-                txt.text = $"Buy {deck} (${card.BuyCost:N0})";
+            {
+                string deckName = deck.ToString();
+                txt.text = $"Buy {deckName} [{row.Length} avail]";
+            }
         }
 
         private void UpdateMarketButtons()

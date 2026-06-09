@@ -59,7 +59,7 @@ namespace OuterRim
 
             var path = MapManager.Instance.FindPath(startId, destinationNodeId);
             if (path == null || path.Count == 0) return false;
-            if (path.Count > speed) return false; // Path too long for speed
+            if (path.Count - 1 > speed) return false; // Path too long for speed (count includes start node)
 
             // Update player location (final node only — intermediates are purely visual)
             player.CurrentNodeId.Value = destinationNodeId;
