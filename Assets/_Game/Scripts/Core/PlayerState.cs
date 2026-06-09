@@ -20,6 +20,7 @@ namespace OuterRim
         // ─── Ship Slots ──────────────────────────────────────────────────────
         public NetworkVariable<int> CargoSlots = new(2);
         public NetworkVariable<int> CargoUsed = new(0);
+        public NetworkVariable<int> BountiesHeld = new(0);           // Bounties occupy cargo space but tracked separately for delivery
         public NetworkVariable<int> CrewSlots = new(1);
         public NetworkVariable<int> CrewUsed = new(0);
         public NetworkVariable<int> GearSlots = new(1);

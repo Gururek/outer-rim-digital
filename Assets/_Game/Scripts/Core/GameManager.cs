@@ -130,7 +130,35 @@ namespace OuterRim
 
         [ServerRpc(RequireOwnership = false)]
         public void BuyCardServerRpc(MarketDeckType dt, int ri, ServerRpcParams p = default)
-        { if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return; DeckManager.Instance?.TryPurchaseCard(GetActivePlayer(), dt, ri); }
+        {
+            if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return;
+            var player = GetActivePlayer();
+            var card = DeckManager.Instance?.TryPurchaseCard(player, dt, ri);
+            if (card == null) return;
+            // Track inventory by deck type
+            switch (dt)
+            {
+                case MarketDeckType.Cargo:
+                    if (player.CargoUsed.Value < player.CargoSlots.Value)
+                        player.CargoUsed.Value++;
+                    break;
+                case MarketDeckType.Bounty:
+                    if (player.CargoUsed.Value < player.CargoSlots.Value)
+                    {
+                        player.CargoUsed.Value++;
+                        player.BountiesHeld.Value++;
+                    }
+                    break;
+                case MarketDeckType.Gear:
+                    if (player.GearUsed.Value < player.GearSlots.Value)
+                        player.GearUsed.Value++;
+                    break;
+                case MarketDeckType.Mods:
+                    if (player.ModUsed.Value < player.ModSlots.Value)
+                        player.ModUsed.Value++;
+                    break;
+            }
+        }
 
         [ServerRpc(RequireOwnership = false)]
         public void CycleCardServerRpc(MarketDeckType dt, int ri, ServerRpcParams p = default)
@@ -138,11 +166,26 @@ namespace OuterRim
 
         [ServerRpc(RequireOwnership = false)]
         public void DeliverCargoServerRpc(int id, ServerRpcParams p = default)
-        { if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return; var ap = GetActivePlayer(); ap.AddCredits(2000); ap.AddFame(1); }
+        {
+            if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return;
+            var ap = GetActivePlayer();
+            if (ap.CargoUsed.Value <= ap.BountiesHeld.Value) return; // No non-bounty cargo to deliver
+            ap.CargoUsed.Value--;
+            ap.AddCredits(2000);
+            ap.AddFame(1);
+        }
 
         [ServerRpc(RequireOwnership = false)]
         public void CompleteBountyServerRpc(int id, ServerRpcParams p = default)
-        { if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return; var ap = GetActivePlayer(); ap.AddCredits(5000); ap.AddFame(2); }
+        {
+            if (!ValidateActive(p.Receive.SenderClientId) || currentPhase.Value != GamePhase.ActionPhase) return;
+            var ap = GetActivePlayer();
+            if (ap.BountiesHeld.Value <= 0) return;
+            ap.BountiesHeld.Value--;
+            ap.CargoUsed.Value--;
+            ap.AddCredits(5000);
+            ap.AddFame(2);
+        }
 
         [ServerRpc(RequireOwnership = false)]
         public void TradeCreditsServerRpc(ulong t, int a, ServerRpcParams p = default)

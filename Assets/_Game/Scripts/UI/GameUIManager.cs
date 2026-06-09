@@ -356,6 +356,8 @@ namespace OuterRim
             combatText.text = $"Combat: {localPlayer.ShipCombatValue.Value}";
             cargoText.text = $"Cargo: {localPlayer.CargoUsed.Value}/{localPlayer.CargoSlots.Value}";
             crewText.text = $"Crew: {localPlayer.CrewUsed.Value}/{localPlayer.CrewSlots.Value}";
+            if (localPlayer.BountiesHeld.Value > 0)
+                cargoText.text += $" (+{localPlayer.BountiesHeld.Value}★ bounty)";
 
             huttRepText.text = $"Hutt: {FormatRep(localPlayer.HuttRep.Value)}";
             syndRepText.text = $"Syndicate: {FormatRep(localPlayer.SyndicateRep.Value)}";
